@@ -74,7 +74,7 @@ function createZombie(spawnID){
 
 function createPlayer(){
 	//FIXME
-	return {};
+	return {pos:{x:10,y:10,rot:0}};
 }
 
 
