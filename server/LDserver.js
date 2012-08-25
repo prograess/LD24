@@ -127,11 +127,12 @@ function maxZombies(){
 var zombiesTotal = 0;
 
 function createZombie(spawnID){
+	var r = 70;
+
 	setTimeout(function(){createZombie(spawnID);},spawnTime);
 	if (zombiesTotal > maxZombies()) return;
 	var coef = generateRandomLinCoef(numGenes);
 
-	var r = 30;
 	var fi = Math.random()*Math.PI*2;
 	var x = spawns[spawnID].x + Math.floor(r*Math.cos(fi));
 	var y = spawns[spawnID].y + Math.floor(r*Math.sin(fi));
@@ -146,7 +147,10 @@ function createZombie(spawnID){
 	zombiesTotal++;
 	unitModels[obj.id] = obj;
 	sendEveryJ('newunit',obj);
-	console.log("createZombie "+x+" "+y);
+	console.log(spawnID + " createZombie "+x+" "+y);
+}
+
+function zombieAI(zombieID){
 }
 
 function createPlayer(){
