@@ -6,6 +6,8 @@ package
 	import flash.events.KeyboardEvent;
 	import flash.events.*;
 	import flash.ui.Keyboard;
+	import flash.utils.Timer;
+	import flash.utils.*;
 	
 	import com.adobe.serialization.json.JSON;
 	import com.prograess.obvyazka.events.JSONEvent;
@@ -27,20 +29,25 @@ package
 		public var moveRight:Boolean = false;
 		public var moveLeft:Boolean = false;
 		public var step:int = 2;
+		
+		public static var me:Human;
+		
 		public function GameSprite() 
 		{
 			
 			terrain = new Terrain();
 			camera = new Sprite();		
 			camera.addChild(terrain);
+			camera.addChild(bulletLayer);
 			addChild(camera);
 			
-			camera.addChild(bulletLayer);
+			
 			
 			camera.addChild(STATIC.units);	
 			
 			addEventListener (Event.ADDED_TO_STAGE, onStage);
 			addEventListener(Event.ENTER_FRAME, onEnterFrame);
+			
 			//Start event listeners
 			STATIC.sc = new ServerController();
 		}
@@ -57,11 +64,22 @@ package
 		{		
 
 			var bull:Bullet = new Bullet(Math.ceil(Math.atan2( e.stageY - playerY, e.stageX - playerX) / Math.PI * 180 ));
-			//bull.x = playerX;
-			//bull.y = playerY;
+			bull.x = me.x;
+			bull.y = me.y;
 			bulletLayer.addChild(bull);				
 			bullArray.push(bull);
-			
+			var bullTimer:Timer = new Timer(Bullet.BulletTime * 900, 1);
+			bullTimer.start();
+			bullTimer.addEventListener(TimerEvent.TIMER_COMPLETE, onTimerComplete);
+		}
+		
+		public function onTimerComplete (e:TimerEvent):void
+		{
+			if (bullArray.length > 0)
+			{
+				bulletLayer.removeChild(bullArray[0]);
+				bullArray.shift();
+			}
 		}
 		
 		public function onMouseMove(e:MouseEvent):void
@@ -69,7 +87,6 @@ package
 			if (STATIC.playerID == '-1') return;
 			STATIC.getPlayerModel().pos.rot = Math.ceil( Math.atan2( e.stageY - playerY, e.stageX - playerX) / Math.PI * 180 );
 			STATIC.units.renewUnit(STATIC.playerID);
-
 		}
 		
 		public function onEnterFrame(e:Event = null):void 

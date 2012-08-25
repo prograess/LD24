@@ -14,6 +14,8 @@ package
 		
 		public function UnitSprite() 
 		{
+			x = -1000;
+			y = -1000;
 			addEventListener(Event.ENTER_FRAME, onFrame);
 		}
 		
