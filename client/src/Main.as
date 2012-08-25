@@ -31,12 +31,13 @@ package
 				addChild(new AskNameSprite);
 				OBVYAZKA.socket.addEventListener("start", function():void {
 					trace("Start game");
-//					removeChildAt(0);
-//					addChild(new GameSprite);
+					removeChildAt(0);
+					addChild(new GameSprite);
 				});
 			});
 			
 			OBVYAZKA.socket.connect();
+			
 		}
 		
 	}
