@@ -1,35 +1,110 @@
 var obvyazka = require('./obvyazka');
 
 var unitModels = [];
-var connectedPlayers = [];
+var connectedPlayers = {};
 
 function getfreeID(){
-	for (var i in connectedPlayers){
-		if (connectedPlayers[i] === undefined) return i;
+	for (var i in unitModels){
+		if (unitModels[i] === undefined) return i;
 	}
-	connectedPlayers.push(undefined);
-	return connectedPlayers.length-1;
+	unitModels.push(undefined);
+	return unitModels.length-1;
+}
+
+function sendEveryJ(type,obj,exclude){
+	for(var i in connectedPlayers){
+		if (i != exclude){
+			connectedPlayers[i].sendJ(type,obj);
+		}
+	}
 }
 
 
+var initialSpawns = 5;
+var spawnTime = 10000;
+
+function initSpawns()
+{
+	for (var i=0;i<initialSpawns;i++)
+	{
+		createRandomSpawn();
+	}
+}
+
+function createRandomSpawn()
+{
+	//FIXME
+	//Init random genes
+	createSpawn();
+}
+
+function createSpawn()
+{
+	//FIXME
+	//init random coords
+	//init genes
+	//add to models
+	//sendEveryJ("newunit",{spawnobject});
+	//setTimeout(spawnTime,function(){createZombie(spawnID)})
+}
+
+function createZombie(spawnID){
+	//if too much zombies return
+	//add zombie
+	// sendEveryJ('newunit',{zombieobject})
+	//setTimeout(spawnTime,function(){createZombie(spawnID)})
+}
+
+function createPlayer(){
+	//FIXME
+	return {};
+}
 
 
 
 var s = new obvyazka.Server(handler,"evol");
 
 function handler(c,a){
-	var id = -1;
+	console.log(JSON.stringify(unitModels));
+	var s = "connected: ";
+	for (var i in connectedPlayers){
+		s+= i;
+	}
+	console.log(s);
+
+	var playerID = -1;
 	c.on("name",function(data){
+		if (playerID != -1) return;
+		playerID = getfreeID();
+
 		console.log("name: " + data);
-		id = getfreeID();
-		connectedPlayers[id] = {name:data.name};
+		console.log("ID: " + playerID);
+
+		unitModels[playerID] = createPlayer();
+		unitModels[playerID].id = playerID;
+		connectedPlayers[playerID] = c;
 		c.sendJ("start",{});
+		c.sendJ("yourself",unitModels[playerID]);
+		var unitlist = {};
+		for (var i in unitModels){
+			if (unitModels[i]){
+				unitlist[i] = unitModels[i];
+			}
+		}
+		c.sendJ("unitlist",unitlist);
+		sendEveryJ('newunit',unitModels[playerID],playerID);
 		console.log("start");
+
+		//FIXME
+		//init game event listeners
 	});
 
 	c.on('close',function(){
-		if (id === -1) return;
-		connectedPlayers[id] = undefined;
+		if (playerID === -1) return;
+
+		sendEveryJ('removeunit',unitModels[playerID],playerID);
+		delete connectedPlayers[playerID];
+		unitModels[playerID] = undefined;
 	});
 }
 
