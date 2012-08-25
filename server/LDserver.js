@@ -153,6 +153,7 @@ function createZombie(spawnID){
 function zombieAI(zombieID,target){
 	var step = 10;
 	var randstep = 10;
+	var rotstep = 30;
 
 	if (!unitModels[target]) return;
 	var dx = unitModels[target].pos.x - unitModels[zombieID].pos.x;
@@ -160,9 +161,12 @@ function zombieAI(zombieID,target){
 
 	var xstep = Math.min(Math.floor(Math.random()*step),Math.abs(dx)) + (Math.random()>0.5?1:-1)*Math.floor(Math.random()*randstep);
 	var ystep = Math.min(Math.floor(Math.random()*step),Math.abs(dy)) + (Math.random()>0.5?1:-1)*Math.floor(Math.random()*randstep);
+	var drot = Math.floor(Math.random()*rotstep);
 
 	unitModels[zombieID].pos.x += (dx>0?1:-1)*xstep;
 	unitModels[zombieID].pos.y += (dy>0?1:-1)*ystep;
+	unitModels[zombieID].pos.rot += drot;
+	unitModels[zombieID].pos.rot %= 360;
 
 	var obj = {};
 	obj.id = zombieID;
