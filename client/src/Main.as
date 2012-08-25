@@ -1,9 +1,11 @@
 package 
 {
 	import com.prograess.obvyazka.Client;
+	import com.prograess.obvyazka.events.JSONEvent;
 	import com.prograess.obvyazka.events.TextEvent;
 	import flash.display.Sprite;
 	import flash.events.Event;
+	import flash.events.IOErrorEvent;
 	
 	/**
 	 * ...
@@ -23,7 +25,18 @@ package
 			removeEventListener(Event.ADDED_TO_STAGE, init);
 			// entry point
 			
-			addChild(new GameSprite);
+			OBVYAZKA.socket = new Client('kkk.myachin.com', 8080, "evol");
+			OBVYAZKA.socket.addEventListener(Event.CONNECT, function():void {
+				trace("connected");
+				addChild(new AskNameSprite);
+				OBVYAZKA.socket.addEventListener("start", function():void {
+					trace("Start game");
+//					removeChildAt(0);
+//					addChild(new GameSprite);
+				});
+			});
+			
+			OBVYAZKA.socket.connect();
 			
 		}
 		
