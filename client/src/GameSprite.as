@@ -6,6 +6,7 @@ package
 	import flash.events.KeyboardEvent;
 	import flash.events.*;
 	import flash.ui.Keyboard;
+	
 	import com.adobe.serialization.json.JSON;
 	import com.prograess.obvyazka.events.JSONEvent;
 	
@@ -20,13 +21,11 @@ package
 		public var playerY:Number = 300;
 		public var terrain:Terrain;
 		public var camera:Sprite;
-		public var humanLayer:Sprite = new Sprite;
-		public var bulletLayer:Sprite = new Sprite;
+		public static var bulletLayer:Sprite = new Sprite;
 		public var moveUp:Boolean = false;
 		public var moveDown:Boolean = false;
 		public var moveRight:Boolean = false;
 		public var moveLeft:Boolean = false;
-		public var player:Human = new Human;
 		public var step:int = 2;
 		public function GameSprite() 
 		{
@@ -36,19 +35,12 @@ package
 			camera.addChild(terrain);
 			addChild(camera);
 			
-			humanLayer.x = playerX;
-			humanLayer.y = playerY;
-			addChild(humanLayer);
-			addChild(bulletLayer);
+			camera.addChild(bulletLayer);
 			
-			humanLayer.addChild(player);		
+			camera.addChild(STATIC.units);	
 			
 			addEventListener (Event.ADDED_TO_STAGE, onStage);
-						
 			addEventListener(Event.ENTER_FRAME, onEnterFrame);
-			
-
-			
 			//Start event listeners
 			STATIC.sc = new ServerController();
 		}
@@ -64,47 +56,65 @@ package
 		public function onMouseDown(e:MouseEvent):void
 		{		
 
-			var bull:Bullet = new Bullet(Math.atan2( e.stageY - playerY, e.stageX - playerX));
-			bull.x = playerX;
-			bull.y = playerY;
-			bulletLayer.addChild(bull);	
+			var bull:Bullet = new Bullet(Math.ceil(Math.atan2( e.stageY - playerY, e.stageX - playerX) / Math.PI * 180 ));
+			//bull.x = playerX;
+			//bull.y = playerY;
+			bulletLayer.addChild(bull);				
 			bullArray.push(bull);
 			
 		}
 		
 		public function onMouseMove(e:MouseEvent):void
 		{					
-			player.rotation = Math.atan2( e.stageY - playerY, e.stageX - playerX) / Math.PI * 180;			
+			if (STATIC.playerID == '-1') return;
+			STATIC.getPlayerModel().pos.rot = Math.ceil( Math.atan2( e.stageY - playerY, e.stageX - playerX) / Math.PI * 180 );
+			STATIC.units.renewUnit(STATIC.playerID);
 
 		}
 		
 		public function onEnterFrame(e:Event = null):void 
 		{
+			camera.x = - STATIC.getPlayerModel().pos.x + 400;
+			camera.y = - STATIC.getPlayerModel().pos.y + 300;
+			
+			var newx:int;
+			var newy:int;
+			newx = newy = 0;
+			if (STATIC.playerID != "-1") {
+				newx = STATIC.getPlayerModel().pos.x;
+				newy = STATIC.getPlayerModel().pos.y;
+				trace("got oldxy " +newx + " " + newy);
+			}
+			
 			if (moveDown)
 			{
-				camera.y-=step;
+				//camera.y -= step;
+				newy += step;
 			}
 			if (moveUp)
 			{
-				camera.y+=step;
+				//camera.y += step;
+				newy -= step;
 			}
 			if (moveLeft)
 			{
-				camera.x+=step;
+				//camera.x += step;
+				newx -= step;
 			}
 			if (moveRight)
 			{
-				camera.x-=step;
+				//camera.x -= step;
+				newx += step;
 			}
-			for (var i:uint = 0; i < bullArray.length; ++i)
-			{
-				bullArray[i].drawBullet();
+			if (STATIC.playerID != "-1") {
+				STATIC.getPlayerModel().pos.x = newx;
+				STATIC.getPlayerModel().pos.y = newy;
+				STATIC.units.renewUnit(STATIC.playerID);
 			}
 		}
 		
 		public function onKeyUp (e:KeyboardEvent):void
 		{
-			
 			switch (e.keyCode)
 			{
 				case Keyboard.UP:
@@ -138,7 +148,7 @@ package
 					break;
 				case Keyboard.RIGHT:
 					moveRight = true;
-					break;
+					break;				
 			}
 		}
 		

@@ -5,12 +5,13 @@ package
 	 * ...
 	 * @author ...
 	 */
-	public class Human extends Sprite
+	public class Human extends UnitSprite
 	{
 		public var human:Sprite;
 		public var a:Number = 40;
 		public var b:Number = 10;
 		public var c:Number = -10;
+		
 		public function Human():void
 		{
 			drawHuman();

@@ -6,22 +6,53 @@ package
 	 * @author 
 	 */
 	public class Units extends Sprite
-	{
-		public static var unitModels:Array;
-		public static var unitSprites:Array;
-		public static var playerID:uint;
+	{		
 		
 		public function Units() 
 		{
 		}
 		
-		public function addUnit(x:int, y:int):void
+		public function init():void {
+			trace('init');
+			for (var i:String in STATIC.unitModels)
+			{
+				addUnit(i);
+			}
+		}
+		
+		/*public function Units(sprites:Array, models:Array)
 		{
-			var newUnit:Sprite = new Sprite;
-			newUnit.graphics.beginFill(0xf2e107);
-			newUnit.graphics.drawRect(x, y, 20, 20 );
-			newUnit.graphics.endFill();
+			STATIC.unitModels = models;	
+			for (var i:uint in STATIC.unitModels)
+			{
+				if (STATIC.unitModels[i]["id"] != STATIC.playerID)
+				{
+					addUnit(STATIC.unitModels[i]["id"], STATIC.unitModels[i]["pos"]["x"], STATIC.unitModels[i]["pos"]["y"], STATIC.unitModels[i]["pos"]["rot"]);
+				}
+			}
+		}*/
+		
+		public function renewUnit (id:String):void
+		{			
+			(STATIC.unitSprites[id] as UnitSprite).rx = STATIC.unitModels[id].pos.x;
+			(STATIC.unitSprites[id] as UnitSprite).ry = STATIC.unitModels[id].pos.y;
+			STATIC.unitSprites[id].rotation = STATIC.unitModels[id].pos.rot;
+		}
+		
+		public function addUnit(id:String):void
+		{
+			var newUnit:Sprite = new Human();
+			newUnit.x = STATIC.unitModels[id].pos.x;
+			newUnit.y = STATIC.unitModels[id].pos.y;
+			newUnit.rotation = STATIC.unitModels[id].pos.rot;
 			this.addChild(newUnit);
+			STATIC.unitSprites[id] = newUnit;
+		}
+		
+		public function deleteUnit(id:String):void
+		{
+			this.removeChild(STATIC.unitSprites[id]);
+			delete STATIC.unitSprites[id];
 		}
 	}
 
