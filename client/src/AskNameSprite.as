@@ -37,7 +37,7 @@ package
 			
 			okBtn.addEventListener(MouseEvent.CLICK, function():void {
 				if (nameTF.text != ""){
-					OBVYAZKA.socket.sendJ("name", nameTF.text);
+					STATIC.socket.sendJ("name", nameTF.text);
 				}
 			});
 			

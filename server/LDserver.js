@@ -11,12 +11,29 @@ function getfreeID(){
 	return unitModels.length-1;
 }
 
-function sendEveryJ(type,obj,exclude){
+var GeoMaxDist = 1000;
+
+function dist(a,b){
+	return Math.max(Math.abs(a.x - b.x),Math.abs(a.y-b.y));
+}
+
+function sendEveryFilterJ(type,obj,filter){
 	for(var i in connectedPlayers){
-		if (i != exclude){
+		if (filter(i)){
 			connectedPlayers[i].sendJ(type,obj);
 		}
 	}
+}
+
+function sendEveryJ(type,obj,exclude){
+	sendEveryFilterJ(type,obj,function(i){return i!= exclude;});
+}
+
+function sendEveryGeoJ(type,obj,myID){
+	sendEveryFilterJ(type,obj,function(i){
+		if (i==myID) return false;
+		return (dist(unitModels[i].pos,unitModels[myID].pos) < GeoMaxDist);
+	});
 }
 
 
@@ -84,7 +101,6 @@ function handler(c,a){
 		unitModels[playerID].id = playerID;
 		connectedPlayers[playerID] = c;
 		c.sendJ("start",{});
-		c.sendJ("yourself",unitModels[playerID]);
 		var unitlist = {};
 		for (var i in unitModels){
 			if (unitModels[i]){
@@ -92,11 +108,14 @@ function handler(c,a){
 			}
 		}
 		c.sendJ("unitlist",unitlist);
+		c.sendJ("yourself",playerID);
 		sendEveryJ('newunit',unitModels[playerID],playerID);
 		console.log("start");
 
-		//FIXME
-		//init game event listeners
+		c.on('XY',function(data){
+			unitModels[playerID].pos = data;
+			sendEveryGeoJ('XY',data);
+		});
 	});
 
 	c.on('close',function(){
