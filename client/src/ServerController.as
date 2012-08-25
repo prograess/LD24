@@ -24,6 +24,7 @@ package
 		public static function onYourself(e:JSONEvent):void {
 			trace("yourself: " + JSON.encode(e.data));
 			STATIC.playerID = e.data.toString();
+			GameSprite.me = STATIC.unitSprites[STATIC.playerID];
 			sendMyXY();
 		}
 		
