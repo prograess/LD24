@@ -150,7 +150,46 @@ function createZombie(spawnID){
 	console.log(spawnID + " createZombie "+x+" "+y);
 }
 
-function zombieAI(zombieID){
+function zombieAI(zombieID,target){
+	var step = 10;
+	var randstep = 10;
+
+	if (!unitModels[target]) return;
+	var dx = unitModels[target].pos.x - unitModels[zombieID].pos.x;
+	var dy = unitModels[target].pos.y - unitModels[zombieID].pos.y;
+
+	var xstep = Math.min(Math.floor(Math.random()*step),Math.abs(dx)) + (Math.random()>0.5?1:-1)*Math.floor(Math.random()*randstep);
+	var ystep = Math.min(Math.floor(Math.random()*step),Math.abs(dy)) + (Math.random()>0.5?1:-1)*Math.floor(Math.random()*randstep);
+
+	unitModels[zombieID].pos.x += (dx>0?1:-1)*xstep;
+	unitModels[zombieID].pos.y += (dy>0?1:-1)*ystep;
+
+	var obj = {};
+	obj.id = zombieID;
+	obj.pos = unitModels[zombieID].pos;
+
+	sendEveryGeoJ('XY',obj,zombieID);
+}
+
+var AITime = 300;
+
+function getTarget(){
+	var target;
+	for (var i in unitModels){
+		if (unitModels[i] && unitModels[i].type == "human"){
+			target = i;
+			break;
+		}
+	}
+	return target;
+}
+
+function zombieAIAll(){
+	setTimeout(zombieAIAll,AITime);
+	var target = getTarget();
+	for (var i in unitModels){
+		if (unitModels[i] && unitModels[i].type == "zombie") zombieAI(i,target);
+	}
 }
 
 function createPlayer(){
@@ -162,6 +201,7 @@ function createPlayer(){
 var s = new obvyazka.Server(handler,"evol");
 
 initSpawns();
+zombieAIAll();
 
 function handler(c,a){
 	console.log(JSON.stringify(unitModels));

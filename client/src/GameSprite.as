@@ -62,8 +62,8 @@ package
 		
 		public function onMouseDown(e:MouseEvent):void
 		{		
-
-			var bull:Bullet = new Bullet(Math.ceil(Math.atan2( e.stageY - playerY, e.stageX - playerX) / Math.PI * 180 ));
+			var ang = Math.ceil(Math.atan2( e.stageY - playerY, e.stageX - playerX) / Math.PI * 180 );
+			var bull:Bullet = new Bullet(ang);
 			bull.x = me.x;
 			bull.y = me.y;
 			bulletLayer.addChild(bull);				
@@ -71,6 +71,12 @@ package
 			var bullTimer:Timer = new Timer(Bullet.BulletTime * 900, 1);
 			bullTimer.start();
 			bullTimer.addEventListener(TimerEvent.TIMER_COMPLETE, onTimerComplete);
+			
+			var obj:Object = new Object;
+			obj.x = bull.x;
+			obj.y = bull.y;
+			
+			//STATIC.socket.sendJ("shoot")
 		}
 		
 		public function onTimerComplete (e:TimerEvent):void
@@ -91,8 +97,10 @@ package
 		
 		public function onEnterFrame(e:Event = null):void 
 		{
-			camera.x = - STATIC.getPlayerModel().pos.x + 400;
-			camera.y = - STATIC.getPlayerModel().pos.y + 300;
+			if (STATIC.playerID != '-1') {
+				camera.x = - STATIC.getPlayerModel().pos.x + 400;
+				camera.y = - STATIC.getPlayerModel().pos.y + 300;
+			}
 			
 			var newx:int;
 			var newy:int;
@@ -100,7 +108,6 @@ package
 			if (STATIC.playerID != "-1") {
 				newx = STATIC.getPlayerModel().pos.x;
 				newy = STATIC.getPlayerModel().pos.y;
-				trace("got oldxy " +newx + " " + newy);
 			}
 			
 			if (moveDown)
