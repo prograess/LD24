@@ -24,6 +24,7 @@ package
 			// entry point
 			
 			addChild(new GameSprite);
+			
 		}
 		
 	}
