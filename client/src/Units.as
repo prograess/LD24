@@ -15,11 +15,11 @@ package
 		{
 		}
 		
-		public function addUnit():void
+		public function addUnit(x:int, y:int):void
 		{
 			var newUnit:Sprite = new Sprite;
 			newUnit.graphics.beginFill(0xf2e107);
-			newUnit.graphics.drawRect(0, 0, 20, 20 );
+			newUnit.graphics.drawRect(x, y, 20, 20 );
 			newUnit.graphics.endFill();
 			this.addChild(newUnit);
 		}
