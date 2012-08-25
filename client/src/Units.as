@@ -41,9 +41,17 @@ package
 		
 		public function addUnit(id:String):void
 		{
-			var newUnit:Sprite = new Human();
-			newUnit.x = STATIC.unitModels[id].pos.x;
-			newUnit.y = STATIC.unitModels[id].pos.y;
+			var newUnit:UnitSprite;
+			switch(STATIC.unitModels[id].type) {
+			case "human":
+				newUnit = new Human();
+				break;
+			case "zombie":
+				newUnit = new Zombie();
+				break;
+			}
+			newUnit.rx = STATIC.unitModels[id].pos.x;
+			newUnit.ry = STATIC.unitModels[id].pos.y;
 			newUnit.rotation = STATIC.unitModels[id].pos.rot;
 			this.addChild(newUnit);
 			STATIC.unitSprites[id] = newUnit;

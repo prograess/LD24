@@ -3,11 +3,16 @@ var obvyazka = require('./obvyazka');
 var unitModels = [];
 var connectedPlayers = {};
 
+var spawns = [];
+
 function getfreeID(){
 	for (var i in unitModels){
-		if (unitModels[i] === undefined) return i;
+		if (unitModels[i] === undefined){
+			unitModels[i] = 'reserved';
+			return i;
+		}
 	}
-	unitModels.push(undefined);
+	unitModels.push("reserved");
 	return unitModels.length-1;
 }
 
@@ -58,7 +63,7 @@ function sendEveryGeoJ(type,obj,myID){
 
 
 var initialSpawns = 5;
-var spawnTime = 10000;
+var spawnTime = 3000;
 var numGenes = 4;
 
 function initSpawns()
@@ -73,19 +78,25 @@ var paramNames = ['ATK','VIT','SPD','ASPD'];
 
 function createRandomSpawn()
 {
-	//FIXME
 	//Init random genes
 	createSpawn();
 }
 
 function createSpawn()
 {
+	var xSize = 1000;
+	var ySize = 1000;
+
 	//FIXME
-	//init random coords
 	//init genes
 	//add to models
+	var obj = {};
+	obj.x= Math.floor(xSize*Math.random());
+	obj.y= Math.floor(ySize*Math.random());
 	//sendEveryJ("newunit",{spawnobject});
-	//createZombie(spawnID);
+	spawns.push(obj);
+	createZombie(spawns.length-1);
+	console.log("createSpawn " + obj.x + " " + obj.y);
 }
 
 function generateRandomLinCoef(num){
@@ -110,35 +121,43 @@ function maxZombies(){
 	for (var i in connectedPlayers){
 		count++;
 	}
-	return count*zombiesPerPlayer;
+	return count*zombiesPerPlayer+10;
 }
 
 var zombiesTotal = 0;
 
 function createZombie(spawnID){
+	setTimeout(function(){createZombie(spawnID);},spawnTime);
 	if (zombiesTotal > maxZombies()) return;
 	var coef = generateRandomLinCoef(numGenes);
 
-	//FIXME
-	var obj = {type:"zombie",pos:{x:10,y:10,rot:0}};
+	var r = 30;
+	var fi = Math.random()*Math.PI*2;
+	var x = spawns[spawnID].x + Math.floor(r*Math.cos(fi));
+	var y = spawns[spawnID].y + Math.floor(r*Math.sin(fi));
+	var obj = {type:"zombie",pos:{x:x,y:y,rot:0}};
 	obj.id = getfreeID();
+	
 	for (var i in paramNames){
 		for(var j in coef){
 			//obj[i]+=coef[j]*gene[j][i];
 		}
 	}
 	zombiesTotal++;
+	unitModels[obj.id] = obj;
 	sendEveryJ('newunit',obj);
-	setTimeout(spawnTime,function(){createZombie(spawnID);});
+	console.log("createZombie "+x+" "+y);
 }
 
 function createPlayer(){
-	return {type:"player",pos:{x:Math.floor(Math.random()*100),y:Math.floor(Math.random()*100),rot:0}};
+	return {type:"human",pos:{x:Math.floor(Math.random()*100),y:Math.floor(Math.random()*100),rot:0}};
 }
 
 
 
 var s = new obvyazka.Server(handler,"evol");
+
+initSpawns();
 
 function handler(c,a){
 	console.log(JSON.stringify(unitModels));
@@ -172,7 +191,7 @@ function handler(c,a){
 		console.log("start");
 
 		c.on('XY',function(data){
-			console.log(playerID + " XY: " + JSON.stringify(data));
+
 			unitModels[playerID].pos = data;
 			var obj = {id:playerID,pos:data};
 			sendEveryGeoJ('XY',obj,playerID);
