@@ -1,6 +1,7 @@
 package  
 {
 	import com.prograess.obvyazka.events.JSONEvent;
+	import com.adobe.serialization.json.JSON;
 	/**
 	 * ...
 	 * @author 
