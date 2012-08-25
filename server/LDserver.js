@@ -73,12 +73,14 @@ function handler(c,a){
 
 	var playerID = -1;
 	c.on("name",function(data){
+		if (playerID != -1) return;
 		playerID = getfreeID();
 
 		console.log("name: " + data);
 		console.log("ID: " + playerID);
 
 		unitModels[playerID] = newPlayer();
+		unitModels[playerID].id = playerID;
 		connectedPlayers[playerID] = c;
 		c.sendJ("start",{});
 		c.sendJ("yourself",unitModels[playerID]);
