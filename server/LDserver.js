@@ -17,6 +17,26 @@ function dist(a,b){
 	return Math.max(Math.abs(a.x - b.x),Math.abs(a.y-b.y));
 }
 
+function hitTest(shot,point){
+	var ScreenHalfsize = 500;
+	var maxRho = 5;
+	var eps = 0.00001;
+
+	if (Math.abs(shot.x - point.x) <= eps && Math.abs(shot.y - point.y) <= eps) return true;
+
+	var dx = point.x - shot.x;
+	var dy = point.y - shot.y;
+	if (Math.abs(dx) > ScreenHalfsize || Math.abs(dy) > ScreenHalfsize)return false;
+	var d2 = dx*dx + dy*dy;
+	var d = Math.sqrt(d2);
+	var sx = Math.cos(shot.rot*Math.PI/180);
+	var sy = Math.sin(shot.rot*Math.PI/180);
+	var cos = (sx*dx + sy*dy)/d;
+	if (cos <= eps )return false;
+	var rho = Math.sqrt(1-cos*cos)*d;
+	return rho < maxRho;
+}
+
 function sendEveryFilterJ(type,obj,filter){
 	for(var i in connectedPlayers){
 		if (filter(i)){
@@ -39,6 +59,7 @@ function sendEveryGeoJ(type,obj,myID){
 
 var initialSpawns = 5;
 var spawnTime = 10000;
+var numGenes = 4;
 
 function initSpawns()
 {
@@ -47,6 +68,8 @@ function initSpawns()
 		createRandomSpawn();
 	}
 }
+
+var paramNames = ['ATK','VIT','SPD','ASPD'];
 
 function createRandomSpawn()
 {
@@ -62,19 +85,55 @@ function createSpawn()
 	//init genes
 	//add to models
 	//sendEveryJ("newunit",{spawnobject});
-	//setTimeout(spawnTime,function(){createZombie(spawnID)})
+	//createZombie(spawnID);
 }
 
+function generateRandomLinCoef(num){
+	var coef = [];
+	var sum = 0;
+	var cur = 0;
+	for(var i=0;i<num;i++){
+		cur = sum*Math.random();
+		coef.push(cur);
+		sum+=cur;
+	}
+	for(var i in coef){
+		coef[i] /= sum;
+	}
+	return coef;
+}
+
+function maxZombies(){
+	var zombiesPerPlayer = 200;
+
+	var count = 0;
+	for (var i in connectedPlayers){
+		count++;
+	}
+	return count*zombiesPerPlayer;
+}
+
+var zombiesTotal = 0;
+
 function createZombie(spawnID){
-	//if too much zombies return
-	//add zombie
-	// sendEveryJ('newunit',{zombieobject})
-	//setTimeout(spawnTime,function(){createZombie(spawnID)})
+	if (zombiesTotal > maxZombies()) return;
+	var coef = generateRandomLinCoef(numGenes);
+
+	//FIXME
+	var obj = {type:"zombie",pos:{x:10,y:10,rot:0}};
+	obj.id = getfreeID();
+	for (var i in paramNames){
+		for(var j in coef){
+			//obj[i]+=coef[j]*gene[j][i];
+		}
+	}
+	zombiesTotal++;
+	sendEveryJ('newunit',obj);
+	setTimeout(spawnTime,function(){createZombie(spawnID);});
 }
 
 function createPlayer(){
-	//FIXME
-	return {pos:{x:10,y:10,rot:0}};
+	return {type:"player",pos:{x:Math.floor(Math.random()*100),y:Math.floor(Math.random()*100),rot:0}};
 }
 
 
@@ -113,8 +172,10 @@ function handler(c,a){
 		console.log("start");
 
 		c.on('XY',function(data){
+			console.log(playerID + " XY: " + JSON.stringify(data));
 			unitModels[playerID].pos = data;
-			sendEveryGeoJ('XY',data);
+			var obj = {id:playerID,pos:data};
+			sendEveryGeoJ('XY',obj,playerID);
 		});
 	});
 
