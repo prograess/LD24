@@ -61,7 +61,7 @@ package
 		
 		public function onKeyUp (e:KeyboardEvent):void
 		{
-			trace(e.keyCode);
+			
 			switch (e.keyCode)
 			{
 				case Keyboard.UP:
