@@ -5,7 +5,9 @@ package
 	import flash.events.FocusEvent;
 	import flash.events.KeyboardEvent;
 	import flash.events.*;
-	 import flash.ui.Keyboard;
+	import flash.ui.Keyboard;
+	import com.adobe.serialization.json.JSON;
+	import com.prograess.obvyazka.events.JSONEvent;
 	
 	/**
 	 * ...
@@ -31,6 +33,19 @@ package
 						
 			addEventListener(Event.ENTER_FRAME, onEnterFrame);
 
+			
+			OBVYAZKA.socket.addEventListener("yourself", function(e:JSONEvent):void {
+				trace("yourself: " + JSON.encode(e.data));
+			});
+			OBVYAZKA.socket.addEventListener("newunit", function(e:JSONEvent):void {
+				trace("newunit: " + JSON.encode(e.data));
+			});
+			OBVYAZKA.socket.addEventListener("removeunit", function(e:JSONEvent):void {
+				trace("removeunit: " + JSON.encode(e.data));
+			});
+			OBVYAZKA.socket.addEventListener("unitlist", function(e:JSONEvent):void {
+				trace("unitlist: " + JSON.encode(e.data));
+			});
 		}
 		
 		public function onStage (e:Event):void

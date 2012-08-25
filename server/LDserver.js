@@ -11,6 +11,15 @@ function getfreeID(){
 	return unitModels.length-1;
 }
 
+function sendEveryJ(type,obj,exclude){
+	for(var i in connectedPlayers){
+		if (i != exclude){
+			connectedPlayers[i].sendJ(type,obj);
+		}
+	}
+}
+
+
 var initialSpawns = 5;
 var spawnTime = 10000;
 
@@ -39,14 +48,6 @@ function createSpawn()
 	//setTimeout(spawnTime,function(){createZombie(spawnID)})
 }
 
-function sendEveryJ(type,obj,exclude){
-	for(var i in connectedPlayers){
-		if (i != exclude){
-			connectedPlayers[i].sendJ(type,obj);
-		}
-	}
-}
-
 function createZombie(spawnID){
 	//if too much zombies return
 	//add zombie
@@ -54,7 +55,7 @@ function createZombie(spawnID){
 	//setTimeout(spawnTime,function(){createZombie(spawnID)})
 }
 
-function newPlayer(){
+function createPlayer(){
 	//FIXME
 	return {};
 }
@@ -79,7 +80,7 @@ function handler(c,a){
 		console.log("name: " + data);
 		console.log("ID: " + playerID);
 
-		unitModels[playerID] = newPlayer();
+		unitModels[playerID] = createPlayer();
 		unitModels[playerID].id = playerID;
 		connectedPlayers[playerID] = c;
 		c.sendJ("start",{});
