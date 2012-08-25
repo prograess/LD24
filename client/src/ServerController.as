@@ -2,7 +2,10 @@ package
 {
 	import com.prograess.obvyazka.events.JSONEvent;
 	import com.adobe.serialization.json.JSON;
+	import com.prograess.obvyazka.events.RawEvent;
+	import flash.utils.ByteArray;
 	import flash.utils.setTimeout;
+	import flash.utils.Endian;
 	/**
 	 * ...
 	 * @author 
@@ -51,14 +54,29 @@ package
 			STATIC.units.init();
 		}
 		
-		public static function onXY(e:JSONEvent):void {			
-			trace("XY: " + JSON.encode(e.data));
-			if ( STATIC.unitModels[e.data.id] == undefined )
-				STATIC.unitModels[e.data.id] = { };
+		public static function onXY(e:RawEvent):void {			
+			var buf:ByteArray = e.data;
+			buf.endian = Endian.LITTLE_ENDIAN;
+			var id:uint;
+			var ids:String;
+			var x:int;
+			var y:int;
+			var rot:int;
+			id = buf.readUnsignedShort();
+			ids = id.toString();
+			x = buf.readShort();
+			y = buf.readShort();
+			rot = buf.readShort();
+			trace("XY: " + x+" "+y+" "+rot);
+			if ( STATIC.unitModels[ids] == undefined )
+				STATIC.unitModels[ids] = { };
 				
 
-			STATIC.unitModels[e.data.id].pos = e.data.pos;
-			STATIC.units.renewUnit(e.data.id);
+			STATIC.unitModels[ids].pos = { };
+			STATIC.unitModels[ids].pos.x = x;
+			STATIC.unitModels[ids].pos.y = y;
+			STATIC.unitModels[ids].pos.rot = rot;
+			STATIC.units.renewUnit(ids);
 		}
 		
 	}

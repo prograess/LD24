@@ -16,6 +16,7 @@ package
 		public function Zombie():void
 		{
 			drawZombie();
+			speed = 0.9;
 		}	
 		public function drawZombie ():void
 		{			

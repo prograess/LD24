@@ -11,6 +11,7 @@ package
 	{
 		public var rx:int = 0;
 		public var ry:int = 0;
+		public var speed: Number = 0.8;
 		
 		public function UnitSprite() 
 		{
@@ -28,8 +29,8 @@ package
 			}
 			else
 			{
-				x = 0.8 * x + 0.2 * rx;
-				y = 0.8 * y + 0.2 * ry;
+				x = speed * x + (1-speed) * rx;
+				y = speed * y + (1-speed) * ry;
 			}
 		}
 	}

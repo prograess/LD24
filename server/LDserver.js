@@ -62,6 +62,28 @@ function sendEveryGeoJ(type,obj,myID){
 }
 
 
+
+function sendEveryFilterR(type,buf,filter){
+	for(var i in connectedPlayers){
+		if (filter(i)){
+			connectedPlayers[i].sendR(type,buf);
+		}
+	}
+}
+
+function sendEveryR(type,buf,exclude){
+	sendEveryFilterR(type,buf,function(i){return i!= exclude;});
+}
+
+function sendEveryGeoR(type,buf,myID){
+	sendEveryFilterR(type,buf,function(i){
+		if (i==myID) return false;
+		return (dist(unitModels[i].pos,unitModels[myID].pos) < GeoMaxDist);
+	});
+}
+
+
+
 var initialSpawns = 5;
 var spawnTime = 3000;
 var numGenes = 4;
@@ -151,7 +173,7 @@ function createZombie(spawnID){
 }
 
 function zombieAI(zombieID,target){
-	var step = 10;
+	var step = 50;
 	var randstep = 10;
 	var rotstep = 30;
 
@@ -168,14 +190,16 @@ function zombieAI(zombieID,target){
 	unitModels[zombieID].pos.rot += drot;
 	unitModels[zombieID].pos.rot %= 360;
 
-	var obj = {};
-	obj.id = zombieID;
-	obj.pos = unitModels[zombieID].pos;
+	var buf = new Buffer(8);
+	buf.writeUInt16LE(parseInt(zombieID),0);
+	buf.writeInt16LE(parseInt(unitModels[zombieID].pos.x),2);
+	buf.writeInt16LE(parseInt(unitModels[zombieID].pos.y),4);
+	buf.writeInt16LE(parseInt(unitModels[zombieID].pos.rot),6);
 
-	sendEveryGeoJ('XY',obj,zombieID);
+	sendEveryGeoR('XY',buf,zombieID);
 }
 
-var AITime = 300;
+var AITime = 500;
 
 function getTarget(){
 	var target;
@@ -241,8 +265,13 @@ function handler(c,a){
 		c.on('XY',function(data){
 
 			unitModels[playerID].pos = data;
-			var obj = {id:playerID,pos:data};
-			sendEveryGeoJ('XY',obj,playerID);
+
+			var buf = new Buffer(8);
+			buf.writeUInt16LE(parseInt(playerID),0);
+			buf.writeInt16LE(parseInt(data.x),2);
+			buf.writeInt16LE(parseInt(data.y),4);
+			buf.writeInt16LE(parseInt(data.rot),6);
+			sendEveryGeoR('XY',buf,playerID);
 		});
 	});
 
