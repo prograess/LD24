@@ -13,30 +13,64 @@ package
 	 */
 	public class GameSprite extends Sprite 
 	{
+		public var bullArray:Array = [];
+		public var playerX:Number = 400;
+		public var playerY:Number = 300;
 		public var terrain:Terrain;
 		public var camera:Sprite;
+		public var humanLayer:Sprite = new Sprite;
+		public var bulletLayer:Sprite = new Sprite;
 		public var moveUp:Boolean = false;
 		public var moveDown:Boolean = false;
 		public var moveRight:Boolean = false;
 		public var moveLeft:Boolean = false;
+		public var player:Human = new Human;
 		public var step:int = 2;
 		public function GameSprite() 
 		{
-			terrain = new Terrain();
-			camera = new Sprite();
 			
+			terrain = new Terrain();
+			camera = new Sprite();		
 			camera.addChild(terrain);
 			addChild(camera);
+			
+			humanLayer.x = playerX;
+			humanLayer.y = playerY;
+			addChild(humanLayer);
+			addChild(bulletLayer);
+			
+			humanLayer.addChild(player);		
+			
 			addEventListener (Event.ADDED_TO_STAGE, onStage);
 						
 			addEventListener(Event.ENTER_FRAME, onEnterFrame);
+			
 
 		}
 		
 		public function onStage (e:Event):void
 		{
 			stage.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
-			stage.addEventListener(KeyboardEvent.KEY_UP, onKeyUp);				
+			stage.addEventListener(KeyboardEvent.KEY_UP, onKeyUp);	
+			stage.addEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
+			stage.addEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
+		}
+		
+		public function onMouseDown(e:MouseEvent):void
+		{		
+
+			var bull:Bullet = new Bullet(Math.atan2( e.stageY - playerY, e.stageX - playerX));
+			bull.x = playerX;
+			bull.y = playerY;
+			bulletLayer.addChild(bull);	
+			bullArray.push(bull);
+			
+		}
+		
+		public function onMouseMove(e:MouseEvent):void
+		{					
+			player.rotation = Math.atan2( e.stageY - playerY, e.stageX - playerX) / Math.PI * 180;			
+
 		}
 		
 		public function onEnterFrame(e:Event = null):void 
@@ -45,17 +79,21 @@ package
 			{
 				camera.y-=step;
 			}
-			else if (moveUp)
+			if (moveUp)
 			{
 				camera.y+=step;
 			}
-			else if (moveLeft)
+			if (moveLeft)
 			{
 				camera.x+=step;
 			}
-			else if (moveRight)
+			if (moveRight)
 			{
 				camera.x-=step;
+			}
+			for (var i:uint = 0; i < bullArray.length; ++i)
+			{
+				bullArray[i].drawBullet();
 			}
 		}
 		
