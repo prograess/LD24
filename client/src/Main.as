@@ -23,14 +23,7 @@ package
 			removeEventListener(Event.ADDED_TO_STAGE, init);
 			// entry point
 			
-			OBVYAZKA.socket = new Client('kkk.myachin.com', 8080, "HI");
-			
-			OBVYAZKA.socket.addEventListener(Event.CONNECT,function():void{
-				OBVYAZKA.socket.addEventListener("YT", function(event:TextEvent):void { trace("YT " + event.data); } );
-				OBVYAZKA.socket.sendU("TY", "Hi there");
-			});
-			
-			OBVYAZKA.socket.connect();
+			addChild(new GameSprite);
 		}
 		
 	}
