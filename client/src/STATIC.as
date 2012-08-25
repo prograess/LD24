@@ -9,10 +9,15 @@ package
 	{
 		
 		public static var socket:Client;
-		public static var unitModels:Object;
-		public static var unitSprites:Object;
-		public static var playerID:uint;
+		public static var unitModels:Object = new Object;
+		public static var unitSprites:Object = new Object;
+		public static var units:Units = new Units;
+		public static var playerID:String = "-1";
 		public static var sc:ServerController;
+		
+		public static function getPlayerModel():Object {
+			return unitModels[playerID];
+		}
 				
 		public function STATIC() 
 		{

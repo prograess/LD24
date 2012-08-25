@@ -2,12 +2,15 @@ package
 {
 	import com.prograess.obvyazka.events.JSONEvent;
 	import com.adobe.serialization.json.JSON;
+	import flash.utils.setTimeout;
 	/**
 	 * ...
 	 * @author 
 	 */
 	public class ServerController 
 	{
+		
+		static var sendMyXYInterval:int = 100;
 		
 		public function ServerController() 
 		{
@@ -20,31 +23,41 @@ package
 		
 		public static function onYourself(e:JSONEvent):void {
 			trace("yourself: " + JSON.encode(e.data));
-			STATIC.playerID = uint(e.data);
+			STATIC.playerID = e.data.toString();
+			sendMyXY();
+		}
+		
+		public static function sendMyXY():void {
+			STATIC.socket.sendJ("XY", STATIC.getPlayerModel().pos);
+			setTimeout(sendMyXY, sendMyXYInterval);
 		}
 		
 		public static function onNewunit(e:JSONEvent):void {
 			trace("newunit: " + JSON.encode(e.data));
 			STATIC.unitModels[e.data.id] = e.data;
-			//FIXME init sprite
+			STATIC.units.addUnit(e.data.id);
 		}
 		
 		public static function onRemoveunit(e:JSONEvent):void {
 			trace("removeunit: " + JSON.encode(e.data));
+			STATIC.units.deleteUnit(e.data.id);
 			delete STATIC.unitModels[e.data.id];
-			//FIXME free sprite
 		}
 		
 		public static function onUnitlist(e:JSONEvent):void {
 			trace("unitlist: " + JSON.encode(e.data));
 			STATIC.unitModels = e.data;
-			//FIXME init unitsprites
+			STATIC.units.init();
 		}
 		
-		public static function onXY(e:JSONEvent):void {
+		public static function onXY(e:JSONEvent):void {			
 			trace("XY: " + JSON.encode(e.data));
-			STATIC.unitModels[e.data].pos = e.data.pos;
-			//FIXME init unitsprites
+			if ( STATIC.unitModels[e.data.id] == undefined )
+				STATIC.unitModels[e.data.id] = { };
+				
+
+			STATIC.unitModels[e.data.id].pos = e.data.pos;
+			STATIC.units.renewUnit(e.data.id);
 		}
 		
 	}
