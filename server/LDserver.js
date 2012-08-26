@@ -68,6 +68,10 @@ function distSphere(a,b){
 	return Math.sqrt(sqr(a.x - b.x)+sqr(a.y-b.y));
 }
 
+function normSphere(a){
+	return distSphere({x:0,y:0},a);
+}
+
 function hitTest(shot,point){
 	var ScreenHalfsize = 500;
 	var maxRho = 7;
@@ -217,7 +221,7 @@ function createZombie(spawnID){
 	var x = unitModels[spawnID].pos.x + Math.floor(r*Math.cos(fi));
 	var y = unitModels[spawnID].pos.y + Math.floor(r*Math.sin(fi));
 	var block = getRealBlock(x,y);
-	var obj = {type:"zombie",pos:{x:x,y:y,rot:0},block:block,ai:{},gene:{}};
+	var obj = {type:"zombie",pos:{x:x,y:y,rot:0},block:block,ai:{dx:0,dy:0,step:0},gene:{accel:15,friction : 0.7,stepW:30,speedPrediction:10}};
 	obj.id = getfreeID();
 	initBlock(block,obj.id);
 	
@@ -242,7 +246,8 @@ function killZombie(zombieID){
 function zombieAI(zombieID){
 	var z = unitModels[zombieID];
 	var ai = z.ai;
-	var step = 50;
+	var gene = z.gene;
+
 	var randstep = 10;
 	var rotstep = 30;
 
@@ -258,16 +263,45 @@ function zombieAI(zombieID){
 	}
 
 	if (!unitModels[ai.target]) return;
-	var dx = unitModels[ai.target].pos.x - unitModels[zombieID].pos.x;
-	var dy = unitModels[ai.target].pos.y - unitModels[zombieID].pos.y;
 
-	var xstep = Math.min(Math.floor(Math.random()*step),Math.abs(dx)) + (Math.random()>0.5?1:-1)*Math.floor(Math.random()*randstep);
-	var ystep = Math.min(Math.floor(Math.random()*step),Math.abs(dy)) + (Math.random()>0.5?1:-1)*Math.floor(Math.random()*randstep);
+	var targetX = unitModels[ai.target].pos.x;
+	var targetY = unitModels[ai.target].pos.y;
+
+	targetX += gene.speedPrediction*unitModels[ai.target].lastdx;
+	targetY += gene.speedPrediction*unitModels[ai.target].lastdy;
+
+	var nx = targetX - z.pos.x;
+	var ny = targetY - z.pos.y;
+	var norm = normSphere({x:nx,y:ny});
+	var ang = Math.floor((Math.atan2(ny,nx)*180/Math.PI));
+	nx /=norm;
+	ny /=norm;
+
+	if (ai.step){
+		ai.dx += gene.stepW * -ny;
+		ai.dy += gene.stepW * nx;
+		ang -= 10;
+
+		ai.step = 0;
+	}
+	else{
+		ai.dx += gene.stepW * ny;
+		ai.dy += gene.stepW * -nx;
+		ang += 10;
+
+		ai.step = 1;
+	}
+
+	ai.dx += gene.accel * nx;
+	ai.dy += gene.accel * ny;
+	ai.dx *= gene.friction;
+	ai.dy *= gene.friction;
+
 	var drot = Math.floor(Math.random()*rotstep);
 
-	unitModels[zombieID].pos.x += (dx>0?1:-1)*xstep;
-	unitModels[zombieID].pos.y += (dy>0?1:-1)*ystep;
-	unitModels[zombieID].pos.rot += drot;
+	unitModels[zombieID].pos.x += ai.dx;
+	unitModels[zombieID].pos.y += ai.dy;
+	unitModels[zombieID].pos.rot = ang;
 	unitModels[zombieID].pos.rot %= 360;
 
 	updateBlock(zombieID);
@@ -307,7 +341,7 @@ function createPlayer(){
 	var y = Math.floor(Math.random()*666);
 	var block = getRealBlock(x,y);
 	initBlock(block,id);
-	return {type:"human",pos:{x:x,y:y,rot:0},block:block,id:id};
+	return {type:"human",pos:{x:x,y:y,rot:0},block:block,id:id,lastdx:0,lastdy:0};
 }
 
 
@@ -350,6 +384,8 @@ function handler(c,a){
 
 		c.on('XY',function(data){
 
+			unitModels[playerID].lastdx = data.x - unitModels[playerID].pos.x;
+			unitModels[playerID].lastdy = data.y - unitModels[playerID].pos.y;
 			unitModels[playerID].pos = data;
 
 			updateBlock(playerID);
