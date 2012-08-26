@@ -2,6 +2,7 @@ var obvyazka = require('./obvyazka');
 
 var unitModels = [];
 var connectedPlayers = {};
+var blocks = {};
 
 var spawns = [];
 
@@ -16,7 +17,43 @@ function getfreeID(){
 	return unitModels.length-1;
 }
 
-var GeoMaxDist = 1000;
+var blockSize = 500;
+var GeoMaxDist = Math.floor((3*blockSize/2));
+
+function getRealBlock(x,y){
+	var xb = Math.floor(x/blockSize)*blockSize;
+	var yb = Math.floor(y/blockSize)*blockSize;
+	return xb.toString() + ":" + yb.toString();
+}
+
+function initBlock(block,id){
+	if (!blocks[block])blocks[block]={};
+		blocks[block][id]=id;
+}
+
+function updateBlock(id){
+	var oldBlock = unitModels[id].block;
+	var newBlock = getRealBlock(unitModels[id].pos.x,unitModels[id].pos.y);
+	if (oldBlock != newBlock){
+		delete blocks[oldBlock][id];
+		unitModels[id].block = newBlock;
+		initBlock(newBlock,id);
+	}
+}
+
+function get9BlockList(x,y){
+	var res = [];
+	var xs = [x-blockSize,x,x+blockSize];
+	var ys = [y-blockSize,y,y+blockSize];
+	for (var i in xs){
+		for(var j in ys){
+			var block = getRealBlock(xs[i],ys[j]);
+			for(var k in blocks[block]){
+				res.push(blocks[block][k]);
+			}
+		}
+	}
+}
 
 function dist(a,b){
 	return Math.max(Math.abs(a.x - b.x),Math.abs(a.y-b.y));
@@ -166,8 +203,10 @@ function createZombie(spawnID){
 	var fi = Math.random()*Math.PI*2;
 	var x = spawns[spawnID].x + Math.floor(r*Math.cos(fi));
 	var y = spawns[spawnID].y + Math.floor(r*Math.sin(fi));
-	var obj = {type:"zombie",pos:{x:x,y:y,rot:0}};
+	var block = getRealBlock(x,y);
+	var obj = {type:"zombie",pos:{x:x,y:y,rot:0},block:block};
 	obj.id = getfreeID();
+	initBlock(block,obj.id);
 	
 	for (var i in paramNames){
 		for(var j in coef){
@@ -204,6 +243,8 @@ function zombieAI(zombieID,target){
 	unitModels[zombieID].pos.rot += drot;
 	unitModels[zombieID].pos.rot %= 360;
 
+	updateBlock(zombieID);
+
 	var buf = new Buffer(8);
 	buf.writeUInt16LE(parseInt(zombieID),0);
 	buf.writeInt16LE(parseInt(unitModels[zombieID].pos.x),2);
@@ -235,7 +276,12 @@ function zombieAIAll(){
 }
 
 function createPlayer(){
-	return {type:"human",pos:{x:Math.floor(Math.random()*100),y:Math.floor(Math.random()*100),rot:0}};
+	var id = getfreeID();
+	var x = Math.floor(Math.random()*666);
+	var y = Math.floor(Math.random()*666);
+	var block = getRealBlock(x,y);
+	initBlock(block,id);
+	return {type:"human",pos:{x:x,y:y,rot:0},block:block,id:id};
 }
 
 
@@ -256,13 +302,13 @@ function handler(c,a){
 	var playerID = -1;
 	c.on("name",function(data){
 		if (playerID != -1) return;
-		playerID = getfreeID();
 
 		console.log("name: " + data);
 		console.log("ID: " + playerID);
 
-		unitModels[playerID] = createPlayer();
-		unitModels[playerID].id = playerID;
+		var p = createPlayer();
+		playerID = p.id;
+		unitModels[playerID] = p;
 		connectedPlayers[playerID] = c;
 		c.sendJ("start",{});
 		var unitlist = {};
@@ -279,6 +325,8 @@ function handler(c,a){
 		c.on('XY',function(data){
 
 			unitModels[playerID].pos = data;
+
+			updateBlock(playerID);
 
 			var buf = new Buffer(8);
 			buf.writeUInt16LE(parseInt(playerID),0);
