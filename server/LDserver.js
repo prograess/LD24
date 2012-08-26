@@ -291,14 +291,11 @@ function createRandomSpawn()
 
 function createSpawn()
 {
-	var xSize = 1000;
-	var ySize = 1000;
-
 	//FIXME
 	//init genes
 	var id = getfreeID();
-	var x = Math.floor(xSize*Math.random());
-	var y = Math.floor(ySize*Math.random());
+	var x = Math.floor(getRandom(worldLeft,worldRight));
+	var y = Math.floor(getRandom(worldTop,worldBottom));
 	var rot = 0;
 	var block = getRealBlock(x,y);
 	var obj = {id:id,pos:{x:x,y:y,rot:rot},block:block,type:"spawn"};
