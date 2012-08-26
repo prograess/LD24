@@ -24,7 +24,7 @@ function dist(a,b){
 
 function hitTest(shot,point){
 	var ScreenHalfsize = 500;
-	var maxRho = 5;
+	var maxRho = 7;
 	var eps = 0.00001;
 
 	if (Math.abs(shot.x - point.x) <= eps && Math.abs(shot.y - point.y) <= eps) return true;
@@ -40,6 +40,14 @@ function hitTest(shot,point){
 	if (cos <= eps )return false;
 	var rho = Math.sqrt(1-cos*cos)*d;
 	return rho < maxRho;
+}
+
+function runShootTest(data){
+	for(var i in unitModels){
+		if(unitModels[i] && unitModels[i].type == "zombie"){
+			if (hitTest(data,unitModels[i].pos)) killZombie(i);
+		}
+	}
 }
 
 function sendEveryFilterJ(type,obj,filter){
@@ -172,6 +180,12 @@ function createZombie(spawnID){
 	console.log(spawnID + " createZombie "+x+" "+y);
 }
 
+function killZombie(zombieID){
+	sendEveryJ('removeunit',unitModels[zombieID]);
+	console.log("killZombie "+zombieID);
+	unitModels[zombieID] = undefined;
+}
+
 function zombieAI(zombieID,target){
 	var step = 50;
 	var randstep = 10;
@@ -274,6 +288,7 @@ function handler(c,a){
 			sendEveryGeoR('XY',buf,playerID);
 		});
 		c.on('shoot',function(data){
+			runShootTest(data);
 			sendEveryGeoJ('shoot',data,playerID);
 		});
 	});

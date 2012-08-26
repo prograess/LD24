@@ -67,7 +67,7 @@ package
 			var obj:Object = new Object;
 			obj.x = bull.x;
 			obj.y = bull.y;
-			obj.dir = ang;
+			obj.rot = ang;
 			STATIC.socket.sendJ("shoot",obj);
 		}
 		

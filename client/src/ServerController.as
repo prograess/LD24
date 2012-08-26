@@ -27,7 +27,7 @@ package
 		
 		public static function onShoot(e:JSONEvent):void {
 			trace("shoot: " + JSON.encode(e.data));
-			var b:Bullet = new Bullet(e.data.x, e.data.y, e.data.dir);
+			var b:Bullet = new Bullet(e.data.x, e.data.y, e.data.rot);
 			b.shoot();
 		}
 		
