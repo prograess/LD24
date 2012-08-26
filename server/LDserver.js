@@ -72,8 +72,9 @@ function getRandom(min,max){
 	return Math.random()*(max-min) + min;
 }
 
+var DNAlen = 200;
+
 function generateRandomDNA(){
-	var DNAlen = 200;
 	var emptyProb = 0.9;
 	var res = [];
 	var prop,type,val,name,obj;
@@ -101,13 +102,26 @@ function generateRandomDNA(){
 	return res;
 }
 
+function makeDNAFromDNAS(dnas){
+	var curDNA = (Math.random()<0.5?1:0);
+	var res = [];
+	for(var i=0;i<DNAlen;i++){
+		if (Math.random()<0.05){
+			curDNA++;
+			curDNA%=2;
+		}
+		res.push(dnas[curDNA][i]);
+	}
+	return res;
+}
+
 function makeGeneFromDNA(dna){
 	var gene={};
 	for (var i in props){
 		gene[props[i].name]=props[i].def;
 	}
 	var name,type,val;
-	for(var i in dna){
+	for(var i=0;i<DNAlen;i++){
 		if (dna[i].empty) continue;
 		if (Math.random()<0.5)continue;
 		name = dna[i].name;
@@ -123,7 +137,7 @@ function makeGeneFromDNA(dna){
 				if (Math.abs(val) > Math.abs(gene[name])) gene[name] = val;
 			}
 			else{
-				if (Math.random() < 0.5) gene[name] = val
+				if (Math.random() < 0.5) gene[name] = val;
 			}
 		}
 	}
@@ -153,13 +167,15 @@ function getRealBlock(x,y){
 }
 
 function initBlock(block,id){
-	if (!blocks[block])blocks[block]={};
-		blocks[block][id]=id;
+	if (!blocks[block])
+		blocks[block]={};
+	blocks[block][id]=id.toString();
 }
 
 function updateBlock(id){
 	var oldBlock = unitModels[id].block;
 	var newBlock = getRealBlock(unitModels[id].pos.x,unitModels[id].pos.y);
+
 	if (oldBlock != newBlock){
 		delete blocks[oldBlock][id];
 		unitModels[id].block = newBlock;
@@ -200,7 +216,7 @@ function normSphere(a){
 
 function hitTest(shot,point){
 	var ScreenHalfsize = 500;
-	var maxRho = 9;
+	var maxRho = 10;
 	var eps = 0.00001;
 
 	if (Math.abs(shot.x - point.x) <= eps && Math.abs(shot.y - point.y) <= eps) return true;
@@ -219,8 +235,10 @@ function hitTest(shot,point){
 }
 
 function runShootTest(data){
+	console.log(JSON.stringify(data));
 	var list = get9BlockList(data.x,data.y);
-	for(var i in list){
+	for(var j in list){
+		var i = list[j];
 		if(unitModels[i] && unitModels[i].type == "zombie"){
 			if (hitTest(data,unitModels[i].pos)) killZombie(i);
 		}
@@ -285,14 +303,14 @@ var paramNames = ['ATK','VIT','SPD','ASPD'];
 
 function createRandomSpawn()
 {
-	//Init random genes
-	createSpawn();
+	var dnas = [];
+	dnas.push(generateRandomDNA());
+	dnas.push(generateRandomDNA());
+	createSpawn(dnas);
 }
 
-function createSpawn()
+function createSpawn(dnas)
 {
-	//FIXME
-	//init genes
 	var id = getfreeID();
 	var x = Math.floor(getRandom(worldLeft,worldRight));
 	var y = Math.floor(getRandom(worldTop,worldBottom));
@@ -300,6 +318,7 @@ function createSpawn()
 	var block = getRealBlock(x,y);
 	var obj = {id:id,pos:{x:x,y:y,rot:rot},block:block,type:"spawn"};
 	unitModels[id] = obj;
+	DNA[id] = dnas;
 	initBlock(block,id);
 	sendEveryJ("newunit",obj);
 	createZombie(id);
@@ -344,7 +363,7 @@ function createZombie(spawnID){
 	var x = unitModels[spawnID].pos.x + Math.floor(r*Math.cos(fi));
 	var y = unitModels[spawnID].pos.y + Math.floor(r*Math.sin(fi));
 	var block = getRealBlock(x,y);
-	var dna = generateRandomDNA();
+	var dna = makeDNAFromDNAS(DNA[spawnID]);
 	var gene = makeGeneFromDNA(dna);
 	var obj = {type:"zombie",pos:{x:x,y:y,rot:0},block:block,ai:{dx:0,dy:0,step:0},gene:gene};
 	capCoords(obj.pos);
@@ -366,7 +385,10 @@ function createZombie(spawnID){
 function killZombie(zombieID){
 	sendEveryJ('removeunit',unitModels[zombieID]);
 	console.log("killZombie "+zombieID);
+	delete blocks[unitModels[zombieID].block][zombieID];
+
 	unitModels[zombieID] = undefined;
+	DNA[zombieID] = undefined;
 	zombiesTotal--;
 }
 
@@ -543,6 +565,8 @@ function handler(c,a){
 		if (playerID === -1) return;
 
 		sendEveryJ('removeunit',unitModels[playerID],playerID);
+		delete blocks[unitModels[playerID].block][playerID];
+
 		delete connectedPlayers[playerID];
 		unitModels[playerID] = undefined;
 	});
