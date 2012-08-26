@@ -3,6 +3,132 @@ var obvyazka = require('./obvyazka');
 var unitModels = [];
 var connectedPlayers = {};
 var blocks = {};
+var DNA = {};
+var props = [
+{
+	name:"accel",
+	type:"float",
+	min:1,
+	max:10,
+	def:1
+},
+{
+	name:"friction",
+	type:"float",
+	min: 0.5,
+	max: 0.9,
+	def:0.9
+},
+{
+	name:"stepW",
+	type:"float",
+	min:0,
+	max:25,
+	def:5
+},
+{
+	name:"speedPrediction",
+	type:"float",
+	min:-20,
+	max:20,
+	def:0
+},
+{
+	name:"repeatMotion",
+	type:"float",
+	min:-0.5,
+	max:0.5,
+	def:0
+},
+{
+	name:"spirality",
+	type:"float",
+	min:-0.6,
+	max:0.6,
+	def:0
+},
+{
+	name:"outfit",
+	type:"halfbyte",
+	min:0,
+	max:0xffffffff,
+	def:0
+}
+];
+
+var worldLeft = -3000;
+var worldRight = 3000;
+var worldTop = -3000;
+var worldBottom = 3000;
+
+function capCoords(c){
+	c.x = Math.min(c.x,worldRight);
+	c.x = Math.max(c.x,worldLeft);
+	c.y = Math.min(c.y,worldBottom);
+	c.y = Math.max(c.y,worldTop);
+}
+
+function getRandom(min,max){
+	return Math.random()*(max-min) + min;
+}
+
+function generateRandomDNA(){
+	var DNAlen = 200;
+	var emptyProb = 0.9;
+	var res = [];
+	var prop,type,val,name,obj;
+	for(var i =0;i<DNAlen;i++){
+		if (Math.random() < emptyProb){
+			name='empty';
+			val = 0;
+			obj = {empty:1};
+		}
+		else{
+			prop = Math.floor(getRandom(0,props.length));
+			name = props[prop].name;
+			type = props[prop].type;
+			if (type != 'halfbyte'){
+				val = getRandom(props[prop].min,props[prop].max);
+			}
+			else{
+				var shift = Math.floor(getRandom(0,8))*4;
+				val = {shift:shift,val:Math.floor(getRandom(0,16))};
+			}
+			obj = {name:name,type:type,val:val};
+		}
+		res.push(obj);
+	}
+	return res;
+}
+
+function makeGeneFromDNA(dna){
+	var gene={};
+	for (var i in props){
+		gene[props[i].name]=props[i].def;
+	}
+	var name,type,val;
+	for(var i in dna){
+		if (dna[i].empty) continue;
+		if (Math.random()<0.5)continue;
+		name = dna[i].name;
+		type = dna[i].type;
+		val = dna[i].val;
+
+		if (type == 'halfbyte'){
+			gene[name] &= ~(0xf<<val.shift);
+			gene[name] |= val.val<<val.shift;
+		}
+		else if (type == "float"){
+			if (gene[name] * val >= 0){ //same sign
+				if (Math.abs(val) > Math.abs(gene[name])) gene[name] = val;
+			}
+			else{
+				if (Math.random() < 0.5) gene[name] = val
+			}
+		}
+	}
+	return gene;
+}
 
 var spawns = [];
 
@@ -68,9 +194,13 @@ function distSphere(a,b){
 	return Math.sqrt(sqr(a.x - b.x)+sqr(a.y-b.y));
 }
 
+function normSphere(a){
+	return distSphere({x:0,y:0},a);
+}
+
 function hitTest(shot,point){
 	var ScreenHalfsize = 500;
-	var maxRho = 7;
+	var maxRho = 9;
 	var eps = 0.00001;
 
 	if (Math.abs(shot.x - point.x) <= eps && Math.abs(shot.y - point.y) <= eps) return true;
@@ -161,14 +291,11 @@ function createRandomSpawn()
 
 function createSpawn()
 {
-	var xSize = 1000;
-	var ySize = 1000;
-
 	//FIXME
 	//init genes
 	var id = getfreeID();
-	var x = Math.floor(xSize*Math.random());
-	var y = Math.floor(ySize*Math.random());
+	var x = Math.floor(getRandom(worldLeft,worldRight));
+	var y = Math.floor(getRandom(worldTop,worldBottom));
 	var rot = 0;
 	var block = getRealBlock(x,y);
 	var obj = {id:id,pos:{x:x,y:y,rot:rot},block:block,type:"spawn"};
@@ -217,8 +344,12 @@ function createZombie(spawnID){
 	var x = unitModels[spawnID].pos.x + Math.floor(r*Math.cos(fi));
 	var y = unitModels[spawnID].pos.y + Math.floor(r*Math.sin(fi));
 	var block = getRealBlock(x,y);
-	var obj = {type:"zombie",pos:{x:x,y:y,rot:0},block:block,ai:{},gene:{}};
+	var dna = generateRandomDNA();
+	var gene = makeGeneFromDNA(dna);
+	var obj = {type:"zombie",pos:{x:x,y:y,rot:0},block:block,ai:{dx:0,dy:0,step:0},gene:gene};
+	capCoords(obj.pos);
 	obj.id = getfreeID();
+	DNA[obj.id] = dna;
 	initBlock(block,obj.id);
 	
 	for (var i in paramNames){
@@ -242,7 +373,8 @@ function killZombie(zombieID){
 function zombieAI(zombieID){
 	var z = unitModels[zombieID];
 	var ai = z.ai;
-	var step = 50;
+	var gene = z.gene;
+
 	var randstep = 10;
 	var rotstep = 30;
 
@@ -258,17 +390,55 @@ function zombieAI(zombieID){
 	}
 
 	if (!unitModels[ai.target]) return;
-	var dx = unitModels[ai.target].pos.x - unitModels[zombieID].pos.x;
-	var dy = unitModels[ai.target].pos.y - unitModels[zombieID].pos.y;
 
-	var xstep = Math.min(Math.floor(Math.random()*step),Math.abs(dx)) + (Math.random()>0.5?1:-1)*Math.floor(Math.random()*randstep);
-	var ystep = Math.min(Math.floor(Math.random()*step),Math.abs(dy)) + (Math.random()>0.5?1:-1)*Math.floor(Math.random()*randstep);
+	var targetX = unitModels[ai.target].pos.x;
+	var targetY = unitModels[ai.target].pos.y;
+
+	targetX += gene.speedPrediction*unitModels[ai.target].lastdx;
+	targetY += gene.speedPrediction*unitModels[ai.target].lastdy;
+
+	var nx = targetX - z.pos.x - gene.spirality*(targetY - z.pos.y);
+	var ny = targetY - z.pos.y + gene.spirality*(targetX - z.pos.x);
+	var norm = normSphere({x:nx,y:ny});
+	var ang = Math.floor((Math.atan2(ny,nx)*180/Math.PI));
+	nx /=norm;
+	ny /=norm;
+	
+	nx += gene.repeatMotion * unitModels[ai.target].lastdx;
+	ny += gene.repeatMotion * unitModels[ai.target].lastdy;
+	norm = normSphere({x:nx,y:ny});
+	nx /=norm;
+	ny /=norm;
+	
+
+	if (ai.step){
+		ai.dx += gene.stepW * -ny;
+		ai.dy += gene.stepW * nx;
+		ang -= 10;
+
+		ai.step = 0;
+	}
+	else{
+		ai.dx += gene.stepW * ny;
+		ai.dy += gene.stepW * -nx;
+		ang += 10;
+
+		ai.step = 1;
+	}
+
+	ai.dx += gene.accel * nx;
+	ai.dy += gene.accel * ny;
+	ai.dx *= gene.friction;
+	ai.dy *= gene.friction;
+
 	var drot = Math.floor(Math.random()*rotstep);
 
-	unitModels[zombieID].pos.x += (dx>0?1:-1)*xstep;
-	unitModels[zombieID].pos.y += (dy>0?1:-1)*ystep;
-	unitModels[zombieID].pos.rot += drot;
+	unitModels[zombieID].pos.x += Math.floor(ai.dx);
+	unitModels[zombieID].pos.y += Math.floor(ai.dy);
+	unitModels[zombieID].pos.rot = ang;
 	unitModels[zombieID].pos.rot %= 360;
+
+	capCoords(unitModels[zombieID].pos);
 
 	updateBlock(zombieID);
 
@@ -303,11 +473,11 @@ function zombieAIAll(){
 
 function createPlayer(){
 	var id = getfreeID();
-	var x = Math.floor(Math.random()*666);
-	var y = Math.floor(Math.random()*666);
+	var x = Math.floor(getRandom(-50,50));
+	var y = Math.floor(getRandom(-50,50));
 	var block = getRealBlock(x,y);
 	initBlock(block,id);
-	return {type:"human",pos:{x:x,y:y,rot:0},block:block,id:id};
+	return {type:"human",pos:{x:x,y:y,rot:0},block:block,id:id,lastdx:0,lastdy:0};
 }
 
 
@@ -350,6 +520,8 @@ function handler(c,a){
 
 		c.on('XY',function(data){
 
+			unitModels[playerID].lastdx = data.x - unitModels[playerID].pos.x;
+			unitModels[playerID].lastdy = data.y - unitModels[playerID].pos.y;
 			unitModels[playerID].pos = data;
 
 			updateBlock(playerID);
