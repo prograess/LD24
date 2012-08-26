@@ -21,7 +21,14 @@ package
 			STATIC.socket.addEventListener("newunit", onNewunit);
 			STATIC.socket.addEventListener("removeunit", onRemoveunit);
 			STATIC.socket.addEventListener("unitlist", onUnitlist);
-			STATIC.socket.addEventListener("XY", onXY);			
+			STATIC.socket.addEventListener("XY", onXY);	
+			STATIC.socket.addEventListener("shoot", onShoot);	
+		}
+		
+		public static function onShoot(e:JSONEvent):void {
+			trace("shoot: " + JSON.encode(e.data));
+			var b:Bullet = new Bullet(e.data.x, e.data.y, e.data.dir);
+			b.shoot();
 		}
 		
 		public static function onYourself(e:JSONEvent):void {

@@ -273,6 +273,9 @@ function handler(c,a){
 			buf.writeInt16LE(parseInt(data.rot),6);
 			sendEveryGeoR('XY',buf,playerID);
 		});
+		c.on('shoot',function(data){
+			sendEveryGeoJ('shoot',data,playerID);
+		});
 	});
 
 	c.on('close',function(){

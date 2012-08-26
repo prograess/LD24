@@ -18,12 +18,10 @@ package
 	 */
 	public class GameSprite extends Sprite 
 	{
-		public var bullArray:Array = [];
 		public var playerX:Number = 400;
 		public var playerY:Number = 300;
 		public var terrain:Terrain;
 		public var camera:Sprite;
-		public static var bulletLayer:Sprite = new Sprite;
 		public var moveUp:Boolean = false;
 		public var moveDown:Boolean = false;
 		public var moveRight:Boolean = false;
@@ -38,7 +36,7 @@ package
 			terrain = new Terrain();
 			camera = new Sprite();		
 			camera.addChild(terrain);
-			camera.addChild(bulletLayer);
+			camera.addChild(Bullet.bulletLayer);
 			addChild(camera);
 			
 			
@@ -63,29 +61,14 @@ package
 		public function onMouseDown(e:MouseEvent):void
 		{		
 			var ang:int = Math.ceil(Math.atan2( e.stageY - playerY, e.stageX - playerX) / Math.PI * 180 );
-			var bull:Bullet = new Bullet(ang);
-			bull.x = me.x;
-			bull.y = me.y;
-			bulletLayer.addChild(bull);				
-			bullArray.push(bull);
-			var bullTimer:Timer = new Timer(Bullet.BulletTime * 900, 1);
-			bullTimer.start();
-			bullTimer.addEventListener(TimerEvent.TIMER_COMPLETE, onTimerComplete);
+			var bull:Bullet = new Bullet(me.x, me.y, ang);
+			bull.shoot();
 			
 			var obj:Object = new Object;
 			obj.x = bull.x;
 			obj.y = bull.y;
-			
-			//STATIC.socket.sendJ("shoot")
-		}
-		
-		public function onTimerComplete (e:TimerEvent):void
-		{
-			if (bullArray.length > 0)
-			{
-				bulletLayer.removeChild(bullArray[0]);
-				bullArray.shift();
-			}
+			obj.dir = ang;
+			STATIC.socket.sendJ("shoot",obj);
 		}
 		
 		public function onMouseMove(e:MouseEvent):void
