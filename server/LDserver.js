@@ -473,8 +473,8 @@ function zombieAIAll(){
 
 function createPlayer(){
 	var id = getfreeID();
-	var x = Math.floor(Math.random()*666);
-	var y = Math.floor(Math.random()*666);
+	var x = Math.floor(getRandom(-50,50));
+	var y = Math.floor(getRandom(-50,50));
 	var block = getRealBlock(x,y);
 	initBlock(block,id);
 	return {type:"human",pos:{x:x,y:y,rot:0},block:block,id:id,lastdx:0,lastdy:0};
