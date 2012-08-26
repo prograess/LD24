@@ -290,7 +290,7 @@ function sendEveryGeoR(type,buf,myID){
 var initialSpawns = 5;
 var spawnTime = 500;
 var numGenes = 4;
-var spawnMaxZombies = 400;
+var spawnMaxZombies = 250;
 
 function initSpawns()
 {
