@@ -13,7 +13,7 @@ package
 	public class ServerController 
 	{
 		
-		static var sendMyXYInterval:int = 100;
+		static public var sendMyXYInterval:int = 100;
 		
 		public function ServerController() 
 		{

@@ -62,7 +62,7 @@ package
 		
 		public function onMouseDown(e:MouseEvent):void
 		{		
-			var ang = Math.ceil(Math.atan2( e.stageY - playerY, e.stageX - playerX) / Math.PI * 180 );
+			var ang:int = Math.ceil(Math.atan2( e.stageY - playerY, e.stageX - playerX) / Math.PI * 180 );
 			var bull:Bullet = new Bullet(ang);
 			bull.x = me.x;
 			bull.y = me.y;
