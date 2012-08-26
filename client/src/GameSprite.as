@@ -58,8 +58,17 @@ package
 			stage.addEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
 		}
 		
+		public static var lastShotTime:int = 0;
+		
 		public function onMouseDown(e:MouseEvent):void
 		{		
+			if (lastShotTime > getTimer() - 500 ) 
+			{
+				return;
+			}
+			
+			lastShotTime = getTimer();
+			
 			var ang:int = Math.ceil(Math.atan2( e.stageY - playerY, e.stageX - playerX) / Math.PI * 180 );
 			var bull:Bullet = new Bullet(me.x, me.y, ang);
 			bull.shoot();

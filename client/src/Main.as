@@ -3,6 +3,7 @@ package
 	import com.prograess.obvyazka.Client;
 	import com.prograess.obvyazka.events.JSONEvent;
 	import com.prograess.obvyazka.events.TextEvent;
+	import com.prograess.zwooki.SoundQueue;
 	import flash.display.Sprite;
 	import flash.events.Event;
 	import flash.events.IOErrorEvent;
@@ -13,6 +14,10 @@ package
 	 */
 	public class Main extends Sprite 
 	{
+		[Embed(source="shot.mp3")]
+		public static var shotCls:Class;
+
+	
 		
 		public function Main():void 
 		{
@@ -38,6 +43,9 @@ package
 			});
 			
 			STATIC.socket.connect();
+			
+			// Звуки
+			SoundQueue.addToBank(shotCls, "shot");
 			
 		}
 		
