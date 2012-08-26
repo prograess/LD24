@@ -56,6 +56,18 @@ var props = [
 }
 ];
 
+var worldLeft = -3000;
+var worldRight = 3000;
+var worldTop = -3000;
+var worldBottom = 3000;
+
+function capCoords(c){
+	c.x = Math.min(c.x,worldRight);
+	c.x = Math.max(c.x,worldLeft);
+	c.y = Math.min(c.y,worldBottom);
+	c.y = Math.max(c.y,worldTop);
+}
+
 function getRandom(min,max){
 	return Math.random()*(max-min) + min;
 }
@@ -338,6 +350,7 @@ function createZombie(spawnID){
 	var dna = generateRandomDNA();
 	var gene = makeGeneFromDNA(dna);
 	var obj = {type:"zombie",pos:{x:x,y:y,rot:0},block:block,ai:{dx:0,dy:0,step:0},gene:gene};
+	capCoords(obj.pos);
 	obj.id = getfreeID();
 	DNA[obj.id] = dna;
 	initBlock(block,obj.id);
@@ -427,6 +440,8 @@ function zombieAI(zombieID){
 	unitModels[zombieID].pos.y += Math.floor(ai.dy);
 	unitModels[zombieID].pos.rot = ang;
 	unitModels[zombieID].pos.rot %= 360;
+
+	capCoords(unitModels[zombieID].pos);
 
 	updateBlock(zombieID);
 
