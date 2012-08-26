@@ -5,7 +5,7 @@ package
 	 * ...
 	 * @author myachin
 	 */
-	public class Spawn extends Sprite
+	public class Spawn extends UnitSprite
 	{
 		
 		public function Spawn() 
