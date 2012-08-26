@@ -24,8 +24,17 @@ package
 			STATIC.socket.addEventListener("unitlist", onUnitlist);
 			STATIC.socket.addEventListener("XY", onXY);	
 			STATIC.socket.addEventListener("shoot", onShoot);	
+			STATIC.socket.addEventListener("bite", onBite);	
+			STATIC.socket.addEventListener("yourdeath", onYourDeath);	
 		}
 		
+		public static var startPlay:uint = 0;
+		
+		public static function onYourDeath(e:JSONEvent):void {
+			GameSprite.THIS.addChild( GameSprite.death );
+			GameSprite.death.show("You are dead\nYour time: "+ (startPlay/1000).toString() + "s\n\nClick to try again.");
+		}
+			
 		public static function onShoot(e:JSONEvent):void {
 			trace("shoot: " + JSON.encode(e.data));
 			var b:Bullet = new Bullet(e.data.x, e.data.y, e.data.rot);
@@ -38,6 +47,23 @@ package
 			
 
 		}
+		
+		public static function onBite(e:JSONEvent):void {
+			trace("bite: " + JSON.encode(e.data));
+			
+			var id:int = e.data.id;
+			
+			var x:int = STATIC.unitModels[id].pos.x ;
+			var y:int = STATIC.unitModels[id].pos.y ;
+			
+			var d:Number = Math.sqrt( 
+				(x - GameSprite.me.x) * (x - GameSprite.me.x) +
+				(y - GameSprite.me.y) * (y - GameSprite.me.y) );
+			
+			SoundQueue.play("hurt", d);
+			
+			GameSprite.THIS.camera.addChild( new BloodRain(x, y) )
+		}		
 		
 		public static function onYourself(e:JSONEvent):void {
 			trace("yourself: " + JSON.encode(e.data));
