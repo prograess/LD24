@@ -566,13 +566,13 @@ function zombieAIAll(){
 	}
 }
 
-function createPlayer(){
+function createPlayer(name){
 	var id = getfreeID();
 	var x = Math.floor(getRandom(-50,50));
 	var y = Math.floor(getRandom(-50,50));
 	var block = getRealBlock(x,y);
 	initBlock(block,id);
-	return {type:"human",pos:{x:x,y:y,rot:0},block:block,id:id,lastdx:0,lastdy:0,health:20};
+	return {type:"human",pos:{x:x,y:y,rot:0},block:block,id:id,lastdx:0,lastdy:0,health:20,name:name};
 }
 
 
@@ -594,7 +594,7 @@ function handler(c,a){
 	c.on("name",function(data){
 		if (playerID != -1) return;
 
-		var p = createPlayer();
+		var p = createPlayer(data);
 		playerID = p.id;
 
 		console.log("name: " + data);
