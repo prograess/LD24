@@ -1,5 +1,6 @@
 package  
 {
+	import com.prograess.zwooki.SoundQueue;
 	import flash.display.Sprite;
 	/**
 	 * ...
@@ -29,7 +30,9 @@ package
 			drawBullet(0, 0);
 		}
 		
-		public function shoot():void {
+		public function shoot( d:Number = 0):void {
+			SoundQueue.play( "shot", d);			
+			
 			var bullTimer:Timer = new Timer(Bullet.BulletTime * 900, 1);
 			bullTimer.start();
 			bullTimer.addEventListener(TimerEvent.TIMER_COMPLETE, onTimerComplete);

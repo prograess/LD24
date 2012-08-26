@@ -3,6 +3,7 @@ package
 	import com.prograess.obvyazka.events.JSONEvent;
 	import com.adobe.serialization.json.JSON;
 	import com.prograess.obvyazka.events.RawEvent;
+	import com.prograess.zwooki.SoundQueue;
 	import flash.utils.ByteArray;
 	import flash.utils.setTimeout;
 	import flash.utils.Endian;
@@ -28,7 +29,14 @@ package
 		public static function onShoot(e:JSONEvent):void {
 			trace("shoot: " + JSON.encode(e.data));
 			var b:Bullet = new Bullet(e.data.x, e.data.y, e.data.rot);
-			b.shoot();
+			
+			var d:Number = Math.sqrt( 
+				(e.data.x - GameSprite.me.x) * (e.data.x - GameSprite.me.x) +
+				(e.data.y - GameSprite.me.y) * (e.data.y - GameSprite.me.y) );
+			b.shoot( d );
+			
+			
+
 		}
 		
 		public static function onYourself(e:JSONEvent):void {
