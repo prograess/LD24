@@ -1,5 +1,6 @@
 package  
 {
+	import com.prograess.zwooki.SoundQueue;
 	import flash.display.Sprite;
 	/**
 	 * ...
@@ -44,7 +45,7 @@ package
 			var newUnit:UnitSprite;
 			switch(STATIC.unitModels[id].type) {
 			case "human":
-				newUnit = new Human();
+				newUnit = new Human( STATIC.unitModels[id].name );
 				break;
 			case "zombie":
 				newUnit = new Zombie( STATIC.unitModels[id].gene.outfit, id.toString() );
@@ -65,6 +66,7 @@ package
 			var color:uint = 0xff0000;
 			if ( STATIC.unitModels[id].type == "zombie" )
 			{
+				SoundQueue.play("dead");
 				color = Zombie.bloodcolors[((STATIC.unitModels[id].gene.outfit & 0x00f00000) >> 20)]  ;
 			}
 			

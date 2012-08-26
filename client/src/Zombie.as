@@ -72,11 +72,12 @@ package
 		public function Zombie( gene:uint = 0, id:String = ""):void
 		{
 			var tf:TextField = new TextField;
-			var ttf:TextFormat = new TextFormat("Arial", 8, 0xffffff);
+			var ttf:TextFormat = new TextFormat("Arial", 7, 0xffffff);
 			
 			tf.defaultTextFormat = ttf;
 			tf.text = id;
-			tf.y = -10;
+			tf.y = -20;
+			tf.mouseEnabled = false;
 			tailSprite.addChild( tf );
 			outfit = gene;
 			

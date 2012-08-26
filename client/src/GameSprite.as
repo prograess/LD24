@@ -38,6 +38,8 @@ package
 		
 		public static var THIS:GameSprite = null;
 		
+		public static var death:DeathSprite = new DeathSprite;
+		
 		public function GameSprite() 
 		{
 			THIS = this;
