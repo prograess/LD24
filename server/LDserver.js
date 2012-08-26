@@ -288,8 +288,9 @@ function sendEveryGeoR(type,buf,myID){
 
 
 var initialSpawns = 5;
-var spawnTime = 3000;
+var spawnTime = 1000;
 var numGenes = 4;
+var spawnMaxZombies = 400;
 
 function initSpawns()
 {
@@ -316,13 +317,50 @@ function createSpawn(dnas)
 	var y = Math.floor(getRandom(worldTop,worldBottom));
 	var rot = 0;
 	var block = getRealBlock(x,y);
-	var obj = {id:id,pos:{x:x,y:y,rot:rot},block:block,type:"spawn"};
+	var obj = {id:id,pos:{x:x,y:y,rot:rot},block:block,type:"spawn",zombiesLeft:spawnMaxZombies};
 	unitModels[id] = obj;
 	DNA[id] = dnas;
 	initBlock(block,id);
 	sendEveryJ("newunit",obj);
 	createZombie(id);
 	console.log("createSpawn " + x + " " + y);
+}
+
+function killSpawn(sid){
+	sendEveryJ('removeunit',unitModels[sid]);
+	console.log("killSpawn "+sid);
+	delete blocks[unitModels[sid].block][sid];
+
+	unitModels[sid] = undefined;
+	DNA[sid] = undefined;
+}
+
+function getTopZombies(c){
+	var res = [];
+	var arr = [];
+	for (var i in unitModels){
+		if (unitModels[i] && unitModels[i].type == "zombie")
+			arr.push(i);
+	}
+	arr.sort(function(a,b){
+		return unitModels[a].rating < unitModels[b].rating;
+	});
+	res = arr.slice(0,5);
+	return res;
+}
+
+function createTopSpawn(){
+	console.log("CreateTopSpawn");
+	var dnas = [];
+	var zs = getTopZombies(5);
+	var i = Math.floor(getRandom(0,5));
+	var j = i;
+	while ( j == i ){
+		j = Math.floor(getRandom(0,5));
+	}
+	dnas.push(DNA[zs[i]]);
+	dnas.push(DNA[zs[j]]);
+	createSpawn(dnas);
 }
 
 function generateRandomLinCoef(num){
@@ -353,9 +391,17 @@ function maxZombies(){
 var zombiesTotal = 0;
 
 function createZombie(spawnID){
+	if (unitModels[spawnID].zombiesLeft == 0){
+		killSpawn(spawnID);
+		createTopSpawn();
+		return;
+	}
+
+	unitModels[spawnID].zombiesLeft--;
+
 	var r = 70;
 
-	setTimeout(function(){createZombie(spawnID);},spawnTime);
+	setTimeout(function(){createZombie(spawnID);},spawnTime + Math.floor(getRandom(-100,100)));
 	if (zombiesTotal > maxZombies()) return;
 	var coef = generateRandomLinCoef(numGenes);
 
@@ -365,7 +411,7 @@ function createZombie(spawnID){
 	var block = getRealBlock(x,y);
 	var dna = makeDNAFromDNAS(DNA[spawnID]);
 	var gene = makeGeneFromDNA(dna);
-	var obj = {type:"zombie",pos:{x:x,y:y,rot:0},block:block,ai:{dx:0,dy:0,step:0},gene:gene};
+	var obj = {type:"zombie",pos:{x:x,y:y,rot:0},block:block,ai:{dx:0,dy:0,step:0},gene:gene,rating:0};
 	capCoords(obj.pos);
 	obj.id = getfreeID();
 	DNA[obj.id] = dna;
@@ -411,6 +457,7 @@ function zombieAI(zombieID){
 	var min = 100000;
 	if (ai.target === undefined){
 		for (var i in connectedPlayers){
+			if (unitModels[i].pos.x<worldLeft - 1000) continue;
 			var d = distSphere(z.pos,unitModels[i].pos);
 			if (min > d){
 				d= min;
@@ -480,13 +527,22 @@ function zombieAI(zombieID){
 
 	sendEveryGeoR('XY',buf,zombieID);
 
+
+	unitModels[zombieID].rating++;
 	checkBite(zombieID,ai.target);
 }
 
 function checkBite(zid,pid){
 	var biteR = 15;
 	if (distSphere(unitModels[zid].pos,unitModels[pid].pos) <= biteR){
-		connectedPlayers[pid].sendJ("bite",{});
+		console.log('BITE ' + pid);
+		unitModels[zid].rating+=2;
+		connectedPlayers[pid].sendJ("bite",{id:pid});
+		sendEveryGeoJ("bite",{id:pid},pid);
+		unitModels[pid].health--;
+		if (unitModels[pid].health == 0){	
+			connectedPlayers[pid].playerDeath(true);
+		}
 	}
 }
 
@@ -516,7 +572,7 @@ function createPlayer(){
 	var y = Math.floor(getRandom(-50,50));
 	var block = getRealBlock(x,y);
 	initBlock(block,id);
-	return {type:"human",pos:{x:x,y:y,rot:0},block:block,id:id,lastdx:0,lastdy:0};
+	return {type:"human",pos:{x:x,y:y,rot:0},block:block,id:id,lastdx:0,lastdy:0,health:20};
 }
 
 
@@ -579,8 +635,29 @@ function handler(c,a){
 		});
 	});
 
+	c.playerDeath = function(){
+		connectedPlayers[playerID].sendJ("yourdeath",{});
+		sendEveryGeoJ("death",{id:playerID},playerID);
+
+		unitModels[playerID].lastdx = 0;
+		unitModels[playerID].lastdy = 0;
+		unitModels[playerID].pos.x = -10000;
+		unitModels[playerID].pos.y = -10000;
+
+		updateBlock(playerID);
+
+		var buf = new Buffer(8);
+		buf.writeUInt16LE(parseInt(playerID),0);
+		buf.writeInt16LE(parseInt(unitModels[playerID].pos.x),2);
+		buf.writeInt16LE(parseInt(unitModels[playerID].pos.y),4);
+		buf.writeInt16LE(parseInt(unitModels[playerID].pos.rot),6);
+		sendEveryGeoR('XY',buf,playerID);
+		c.sendR('XY',buf);
+	};
+
 	c.on('close',function(){
 		if (playerID === -1) return;
+
 
 		removeAITarget(playerID);
 
@@ -589,6 +666,8 @@ function handler(c,a){
 
 		delete connectedPlayers[playerID];
 		unitModels[playerID] = undefined;
+
+		playerID = -1;
 	});
 }
 
