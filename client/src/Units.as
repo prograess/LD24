@@ -49,6 +49,9 @@ package
 			case "zombie":
 				newUnit = new Zombie();
 				break;
+			case "spawn":
+				newUnit = new Spawn();
+				break
 			}
 			newUnit.rx = STATIC.unitModels[id].pos.x;
 			newUnit.ry = STATIC.unitModels[id].pos.y;
