@@ -216,7 +216,7 @@ function normSphere(a){
 
 function hitTest(shot,point){
 	var ScreenHalfsize = 500;
-	var maxRho = 10;
+	var maxRho = 13;
 	var eps = 0.00001;
 
 	if (Math.abs(shot.x - point.x) <= eps && Math.abs(shot.y - point.y) <= eps) return true;
@@ -392,6 +392,14 @@ function killZombie(zombieID){
 	zombiesTotal--;
 }
 
+function removeAITarget(id){
+	for (var i in unitModels){
+		if (unitModels[i].ai && unitModels[i].ai.target == id){
+			unitModels[i].ai.target = undefined;
+		}
+	}
+}
+
 function zombieAI(zombieID){
 	var z = unitModels[zombieID];
 	var ai = z.ai;
@@ -471,6 +479,15 @@ function zombieAI(zombieID){
 	buf.writeInt16LE(parseInt(unitModels[zombieID].pos.rot),6);
 
 	sendEveryGeoR('XY',buf,zombieID);
+
+	checkBite(zombieID,ai.target);
+}
+
+function checkBite(zid,pid){
+	var biteR = 15;
+	if (distSphere(unitModels[zid].pos,unitModels[pid].pos) <= biteR){
+		connectedPlayers[pid].sendJ("bite",{});
+	}
 }
 
 var AITime = 500;
@@ -521,11 +538,12 @@ function handler(c,a){
 	c.on("name",function(data){
 		if (playerID != -1) return;
 
+		var p = createPlayer();
+		playerID = p.id;
+
 		console.log("name: " + data);
 		console.log("ID: " + playerID);
 
-		var p = createPlayer();
-		playerID = p.id;
 		unitModels[playerID] = p;
 		connectedPlayers[playerID] = c;
 		c.sendJ("start",{});
@@ -563,6 +581,8 @@ function handler(c,a){
 
 	c.on('close',function(){
 		if (playerID === -1) return;
+
+		removeAITarget(playerID);
 
 		sendEveryJ('removeunit',unitModels[playerID],playerID);
 		delete blocks[unitModels[playerID].block][playerID];
