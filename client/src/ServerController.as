@@ -47,6 +47,8 @@ package
 		}
 		
 		public static function sendMyXY():void {
+			STATIC.getPlayerModel().pos.x = int(STATIC.getPlayerModel().pos.x);
+			STATIC.getPlayerModel().pos.y = int(STATIC.getPlayerModel().pos.y);
 			STATIC.socket.sendJ("XY", STATIC.getPlayerModel().pos);
 			setTimeout(sendMyXY, sendMyXYInterval);
 		}
@@ -82,7 +84,7 @@ package
 			x = buf.readShort();
 			y = buf.readShort();
 			rot = buf.readShort();
-			trace("XY: " + x+" "+y+" "+rot);
+			//trace("XY: " + x+" "+y+" "+rot);
 			if ( STATIC.unitModels[ids] == undefined )
 				STATIC.unitModels[ids] = { };
 				
