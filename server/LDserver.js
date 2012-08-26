@@ -394,7 +394,7 @@ function killZombie(zombieID){
 
 function removeAITarget(id){
 	for (var i in unitModels){
-		if (unitModels[i].ai && unitModels[i].ai.target == id){
+		if (unitModels[i] && unitModels[i].ai && unitModels[i].ai.target == id){
 			unitModels[i].ai.target = undefined;
 		}
 	}
