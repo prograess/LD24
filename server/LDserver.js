@@ -56,8 +56,16 @@ function get9BlockList(x,y){
 	return res;
 }
 
-function dist(a,b){
+function distCube(a,b){
 	return Math.max(Math.abs(a.x - b.x),Math.abs(a.y-b.y));
+}
+
+function sqr(a){
+	return a*a;
+}
+
+function distSphere(a,b){
+	return Math.sqrt(sqr(a.x - b.x)+sqr(a.y-b.y));
 }
 
 function hitTest(shot,point){
@@ -104,7 +112,7 @@ function sendEveryJ(type,obj,exclude){
 function sendEveryGeoJ(type,obj,myID){
 	sendEveryFilterJ(type,obj,function(i){
 		if (i==myID) return false;
-		return (dist(unitModels[i].pos,unitModels[myID].pos) < GeoMaxDist);
+		return (distCube(unitModels[i].pos,unitModels[myID].pos) < GeoMaxDist);
 	});
 }
 
@@ -125,7 +133,7 @@ function sendEveryR(type,buf,exclude){
 function sendEveryGeoR(type,buf,myID){
 	sendEveryFilterR(type,buf,function(i){
 		if (i==myID) return false;
-		return (dist(unitModels[i].pos,unitModels[myID].pos) < GeoMaxDist);
+		return (distCube(unitModels[i].pos,unitModels[myID].pos) < GeoMaxDist);
 	});
 }
 
@@ -158,14 +166,17 @@ function createSpawn()
 
 	//FIXME
 	//init genes
-	//add to models
-	var obj = {};
-	obj.x= Math.floor(xSize*Math.random());
-	obj.y= Math.floor(ySize*Math.random());
-	//sendEveryJ("newunit",{spawnobject});
-	spawns.push(obj);
-	createZombie(spawns.length-1);
-	console.log("createSpawn " + obj.x + " " + obj.y);
+	var id = getfreeID();
+	var x = Math.floor(xSize*Math.random());
+	var y = Math.floor(ySize*Math.random());
+	var rot = 0;
+	var block = getRealBlock(x,y);
+	var obj = {id:id,pos:{x:x,y:y,rot:rot},block:block,type:"spawn"};
+	unitModels[id] = obj;
+	initBlock(block,id);
+	sendEveryJ("newunit",obj);
+	createZombie(id);
+	console.log("createSpawn " + x + " " + y);
 }
 
 function generateRandomLinCoef(num){
@@ -203,10 +214,10 @@ function createZombie(spawnID){
 	var coef = generateRandomLinCoef(numGenes);
 
 	var fi = Math.random()*Math.PI*2;
-	var x = spawns[spawnID].x + Math.floor(r*Math.cos(fi));
-	var y = spawns[spawnID].y + Math.floor(r*Math.sin(fi));
+	var x = unitModels[spawnID].pos.x + Math.floor(r*Math.cos(fi));
+	var y = unitModels[spawnID].pos.y + Math.floor(r*Math.sin(fi));
 	var block = getRealBlock(x,y);
-	var obj = {type:"zombie",pos:{x:x,y:y,rot:0},block:block};
+	var obj = {type:"zombie",pos:{x:x,y:y,rot:0},block:block,ai:{},gene:{}};
 	obj.id = getfreeID();
 	initBlock(block,obj.id);
 	
@@ -225,16 +236,30 @@ function killZombie(zombieID){
 	sendEveryJ('removeunit',unitModels[zombieID]);
 	console.log("killZombie "+zombieID);
 	unitModels[zombieID] = undefined;
+	zombiesTotal--;
 }
 
-function zombieAI(zombieID,target){
+function zombieAI(zombieID){
+	var z = unitModels[zombieID];
+	var ai = z.ai;
 	var step = 50;
 	var randstep = 10;
 	var rotstep = 30;
 
-	if (!unitModels[target]) return;
-	var dx = unitModels[target].pos.x - unitModels[zombieID].pos.x;
-	var dy = unitModels[target].pos.y - unitModels[zombieID].pos.y;
+	var min = 100000;
+	if (ai.target === undefined){
+		for (var i in connectedPlayers){
+			var d = distSphere(z.pos,unitModels[i].pos);
+			if (min > d){
+				d= min;
+				ai.target = i;
+			}
+		}
+	}
+
+	if (!unitModels[ai.target]) return;
+	var dx = unitModels[ai.target].pos.x - unitModels[zombieID].pos.x;
+	var dy = unitModels[ai.target].pos.y - unitModels[zombieID].pos.y;
 
 	var xstep = Math.min(Math.floor(Math.random()*step),Math.abs(dx)) + (Math.random()>0.5?1:-1)*Math.floor(Math.random()*randstep);
 	var ystep = Math.min(Math.floor(Math.random()*step),Math.abs(dy)) + (Math.random()>0.5?1:-1)*Math.floor(Math.random()*randstep);
@@ -271,9 +296,8 @@ function getTarget(){
 
 function zombieAIAll(){
 	setTimeout(zombieAIAll,AITime);
-	var target = getTarget();
 	for (var i in unitModels){
-		if (unitModels[i] && unitModels[i].type == "zombie") zombieAI(i,target);
+		if (unitModels[i] && unitModels[i].type == "zombie") zombieAI(i);
 	}
 }
 
