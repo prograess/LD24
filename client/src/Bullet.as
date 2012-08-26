@@ -13,7 +13,7 @@ package
 	import flash.utils.Timer;
 	public class Bullet extends Sprite
 	{
-		public static const BulletTime:Number = 0.3;
+		public static const BulletTime:Number = 0.1;
 		public static const BulletSpeed:Number = 10;
 		
 		public static var bulArray:Array = [];

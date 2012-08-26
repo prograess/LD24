@@ -82,7 +82,7 @@ package
 			x = buf.readShort();
 			y = buf.readShort();
 			rot = buf.readShort();
-			trace("XY: " + x+" "+y+" "+rot);
+			//trace("XY: " + x+" "+y+" "+rot);
 			if ( STATIC.unitModels[ids] == undefined )
 				STATIC.unitModels[ids] = { };
 				

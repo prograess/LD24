@@ -13,6 +13,8 @@ package
 		public function Terrain() 
 		{			
 		
+			graphics.beginBitmapFill(GameSprite._back.bitmapData);
+			graphics.drawRect(-3000,-3000, 6000, 6000);
 			var i:uint = 0;
 			var j:uint = 0;
 			
@@ -29,6 +31,8 @@ package
 			circleSprite.graphics.drawCircle (Math.random() * w, Math.random() * h, 10);
 			circleSprite.graphics.endFill();
 			this.addChild(circleSprite);
+			
+			
 		}
 		
 	}

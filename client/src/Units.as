@@ -47,7 +47,7 @@ package
 				newUnit = new Human();
 				break;
 			case "zombie":
-				newUnit = new Zombie();
+				newUnit = new Zombie( STATIC.unitModels[id].gene.outfit );
 				break;
 			case "spawn":
 				newUnit = new Spawn();
@@ -62,6 +62,13 @@ package
 		
 		public function deleteUnit(id:String):void
 		{
+			var color:uint = 0xff0000;
+			if ( STATIC.unitModels[id].type == "zombie" )
+			{
+				color = Zombie.bloodcolors[((STATIC.unitModels[id].gene.outfit & 0x00f00000) >> 20)]  ;
+			}
+			
+			GameSprite.THIS.camera.addChild( new BloodRain(STATIC.unitSprites[id].x, STATIC.unitSprites[id].y, color) )
 			this.removeChild(STATIC.unitSprites[id]);
 			delete STATIC.unitSprites[id];
 		}

@@ -12,6 +12,8 @@ package
 	import com.adobe.serialization.json.JSON;
 	import com.prograess.obvyazka.events.JSONEvent;
 	
+	import flash.display.Bitmap;
+	
 	/**
 	 * ...
 	 * @author 
@@ -30,9 +32,15 @@ package
 		
 		public static var me:Human;
 		
+		[Embed(source = 'back.png')]
+		public static var _backClass:Class;		
+		public static var _back:Bitmap = new _backClass as Bitmap;
+		
+		public static var THIS:GameSprite = null;
+		
 		public function GameSprite() 
 		{
-			
+			THIS = this;
 			terrain = new Terrain();
 			camera = new Sprite();		
 			camera.addChild(terrain);
@@ -133,15 +141,19 @@ package
 		{
 			switch (e.keyCode)
 			{
+				case Keyboard.W:
 				case Keyboard.UP:
 					moveUp = false;
 					break;
+				case Keyboard.S:
 				case Keyboard.DOWN:
 					moveDown = false;
 					break;		
+				case Keyboard.A:
 				case Keyboard.LEFT:
 					moveLeft = false;
 					break;
+				case Keyboard.D:
 				case Keyboard.RIGHT:
 					moveRight = false;
 					break;
@@ -153,15 +165,19 @@ package
 			
 			switch (e.keyCode)
 			{
+				case Keyboard.W:
 				case Keyboard.UP:
 					moveUp = true;
 					break;
+				case Keyboard.S:
 				case Keyboard.DOWN:
 					moveDown = true;
 					break;		
+				case Keyboard.A:
 				case Keyboard.LEFT:
 					moveLeft = true;
 					break;
+				case Keyboard.D:
 				case Keyboard.RIGHT:
 					moveRight = true;
 					break;				
