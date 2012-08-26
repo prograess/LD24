@@ -7,6 +7,8 @@ package
 	import flash.filters.BevelFilter;
 	import flash.filters.BlurFilter;
 	import flash.filters.GradientGlowFilter;
+	import flash.text.TextField;
+	import flash.text.TextFormat;
 	/**
 	 * ...
 	 * @author ...
@@ -67,8 +69,15 @@ package
 		
 		public var tailSprite:Sprite = new Sprite;
 		
-		public function Zombie( gene:uint = 0):void
+		public function Zombie( gene:uint = 0, id:String = ""):void
 		{
+			var tf:TextField = new TextField;
+			var ttf:TextFormat = new TextFormat("Arial", 8, 0xffffff);
+			
+			tf.defaultTextFormat = ttf;
+			tf.text = id;
+			tf.y = -10;
+			tailSprite.addChild( tf );
 			outfit = gene;
 			
 			

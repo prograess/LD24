@@ -47,7 +47,7 @@ package
 				newUnit = new Human();
 				break;
 			case "zombie":
-				newUnit = new Zombie( STATIC.unitModels[id].gene.outfit );
+				newUnit = new Zombie( STATIC.unitModels[id].gene.outfit, id.toString() );
 				break;
 			case "spawn":
 				newUnit = new Spawn();

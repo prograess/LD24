@@ -5,6 +5,8 @@ package
 	import flash.text.TextField;
 	import flash.text.TextFieldType;
 	import flash.events.MouseEvent;
+	import flash.text.TextFormat;
+	import flash.text.TextFormatAlign;
 	
 	/**
 	 * ...
@@ -22,11 +24,23 @@ package
 			enterNameTF.height = 30;
 			enterNameTF.text = "enter your name";
 			
+			var ttf:TextFormat = new TextFormat("Arial", 34, 0xffffff, null, null, null, null, null, TextFormatAlign.CENTER);
+			
 			nameTF = new TextField();
 			nameTF.y = 50;
 			nameTF.type = TextFieldType.INPUT;
 			nameTF.border = true;
-			nameTF.height = 30;
+			nameTF.borderColor = 0xff0000;
+			nameTF.height = 50;
+			nameTF.width = 500;
+			nameTF.maxChars = 30;
+			
+			nameTF.defaultTextFormat = ttf;
+			
+			nameTF.x = 200;
+			nameTF.y = 200;
+			
+			
 			
 			okBtn = new ButtonSprite();
 			okBtn.x = 100;
