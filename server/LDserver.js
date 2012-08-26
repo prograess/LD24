@@ -53,6 +53,7 @@ function get9BlockList(x,y){
 			}
 		}
 	}
+	return res;
 }
 
 function dist(a,b){
@@ -80,7 +81,8 @@ function hitTest(shot,point){
 }
 
 function runShootTest(data){
-	for(var i in unitModels){
+	var list = get9BlockList(data.x,data.y);
+	for(var i in list){
 		if(unitModels[i] && unitModels[i].type == "zombie"){
 			if (hitTest(data,unitModels[i].pos)) killZombie(i);
 		}
