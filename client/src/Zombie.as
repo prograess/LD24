@@ -100,7 +100,7 @@ package
 			drawZombie();
 			speed = 0.9;
 			
-			addEventListener(Event.ENTER_FRAME, tailUpdate);
+			//addEventListener(Event.ENTER_FRAME, tailUpdate);
 		}	
 		public function drawZombie ():void
 		{			

@@ -11,7 +11,7 @@ package
 	{
 		public var rx:int = 0;
 		public var ry:int = 0;
-		public var speed: Number = 0.8;
+		public var speed: Number = 0.9;
 		
 		public function UnitSprite() 
 		{
