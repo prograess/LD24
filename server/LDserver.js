@@ -288,9 +288,9 @@ function sendEveryGeoR(type,buf,myID){
 
 
 var initialSpawns = 5;
-var spawnTime = 1000;
+var spawnTime = 500;
 var numGenes = 4;
-var spawnMaxZombies = 400;
+var spawnMaxZombies = 250;
 
 function initSpawns()
 {
@@ -358,6 +358,7 @@ function createTopSpawn(){
 	while ( j == i ){
 		j = Math.floor(getRandom(0,5));
 	}
+	console.log(unitModels[zs[i]].rating + " " + unitModels[zs[j]].rating);
 	dnas.push(DNA[zs[i]]);
 	dnas.push(DNA[zs[j]]);
 	createSpawn(dnas);
@@ -379,7 +380,7 @@ function generateRandomLinCoef(num){
 }
 
 function maxZombies(){
-	var zombiesPerPlayer = 200;
+	var zombiesPerPlayer = 400;
 
 	var count = 0;
 	for (var i in connectedPlayers){
@@ -425,7 +426,6 @@ function createZombie(spawnID){
 	zombiesTotal++;
 	unitModels[obj.id] = obj;
 	sendEveryJ('newunit',obj);
-	console.log(spawnID + " createZombie "+x+" "+y);
 }
 
 function killZombie(zombieID){
@@ -533,7 +533,7 @@ function zombieAI(zombieID){
 }
 
 function checkBite(zid,pid){
-	var biteR = 15;
+	var biteR = 20;
 	if (distSphere(unitModels[zid].pos,unitModels[pid].pos) <= biteR){
 		console.log('BITE ' + pid);
 		unitModels[zid].rating+=2;
@@ -566,13 +566,13 @@ function zombieAIAll(){
 	}
 }
 
-function createPlayer(){
+function createPlayer(name){
 	var id = getfreeID();
 	var x = Math.floor(getRandom(-50,50));
 	var y = Math.floor(getRandom(-50,50));
 	var block = getRealBlock(x,y);
 	initBlock(block,id);
-	return {type:"human",pos:{x:x,y:y,rot:0},block:block,id:id,lastdx:0,lastdy:0,health:20};
+	return {type:"human",pos:{x:x,y:y,rot:0},block:block,id:id,lastdx:0,lastdy:0,health:20,name:name};
 }
 
 
@@ -594,7 +594,7 @@ function handler(c,a){
 	c.on("name",function(data){
 		if (playerID != -1) return;
 
-		var p = createPlayer();
+		var p = createPlayer(data);
 		playerID = p.id;
 
 		console.log("name: " + data);
@@ -654,6 +654,25 @@ function handler(c,a){
 		sendEveryGeoR('XY',buf,playerID);
 		c.sendR('XY',buf);
 	};
+
+	c.on('RE',function(){
+		var x = Math.floor(getRandom(-50,50));
+		var y = Math.floor(getRandom(-50,50));
+		var block = getRealBlock(x,y);
+		initBlock(block,playerID);
+		unitModels[playerID].pos.x = x;
+		unitModels[playerID].pos.y = y;
+		unitModels[playerID].block = block;
+		unitModels[playerID].health = 20;
+
+		var buf = new Buffer(8);
+		buf.writeUInt16LE(parseInt(playerID),0);
+		buf.writeInt16LE(parseInt(unitModels[playerID].pos.x),2);
+		buf.writeInt16LE(parseInt(unitModels[playerID].pos.y),4);
+		buf.writeInt16LE(parseInt(unitModels[playerID].pos.rot),6);
+		sendEveryGeoR('XY',buf,playerID);
+		c.sendR('XY',buf);
+	});
 
 	c.on('close',function(){
 		if (playerID === -1) return;
