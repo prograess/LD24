@@ -32,7 +32,7 @@ package com.prograess.zwooki
 				if (( lastPlays[soundName] + 10 > getTimer() ) && ( lastPlays[soundName] <= getTimer() + 1 ) )
 				{
 					var delay:int = 10 + Math.random() * 20;
-					setTimeout(  function():void { play(soundName, distance); }, delay  );
+					// setTimeout(  function():void { play(soundName, distance); }, delay  );
 					
 					lastPlays[soundName] += delay;
 					return;

@@ -69,10 +69,11 @@ package
 		}
 		
 		public static var lastShotTime:int = 0;
+		public static var SHOT_TIME:int = 200;
 		
 		public function onMouseDown(e:MouseEvent):void
 		{		
-			if (lastShotTime > getTimer() - 500 ) 
+			if (lastShotTime > getTimer() - SHOT_TIME ) 
 			{
 				return;
 			}
@@ -94,6 +95,10 @@ package
 		{					
 			if (STATIC.playerID == '-1') return;
 			STATIC.getPlayerModel().pos.rot = Math.ceil( Math.atan2( e.stageY - playerY, e.stageX - playerX) / Math.PI * 180 );
+			STATIC.getPlayerModel().pos.rot = Math.ceil( Math.atan2( e.stageY - playerY, e.stageX - playerX) / Math.PI * 180 );
+			
+			me.rotation = me.rrot;
+			
 			STATIC.units.renewUnit(STATIC.playerID);
 		}
 		
@@ -137,6 +142,8 @@ package
 				STATIC.getPlayerModel().pos.y = newy;
 				STATIC.units.renewUnit(STATIC.playerID);
 			}
+			
+			if (me) me.update();
 		}
 		
 		public function onKeyUp (e:KeyboardEvent):void

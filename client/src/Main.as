@@ -37,7 +37,7 @@ package
 			removeEventListener(Event.ADDED_TO_STAGE, init);
 			// entry point
 
-			STATIC.socket = new Client('kkk.myachin.com', 8080, "evol");
+			STATIC.socket = new Client('kkk.myachin.com', 443, "evol");
 			//STATIC.socket = new Client('127.0.0.1', 8080, "evol");
 			STATIC.socket.addEventListener(Event.CONNECT, function():void {
 				trace("connected");

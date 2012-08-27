@@ -9,6 +9,8 @@ package
 	import flash.filters.GradientGlowFilter;
 	import flash.text.TextField;
 	import flash.text.TextFormat;
+	import flash.display.Bitmap;
+	
 	/**
 	 * ...
 	 * @author ...
@@ -21,7 +23,11 @@ package
 		public var tailx:Array = new Array;
 		public var taily:Array = new Array;		
 		public var tailxs:Array = new Array;
-		public var tailys:Array = new Array;		
+		public var tailys:Array = new Array;
+		
+		[Embed(source = 'vorona2.png')]
+		public static var _voronaClass:Class;		
+		public static var _vorona:Bitmap = new _voronaClass as Bitmap;
 
 		public static var bloodcolors:Array = 
 		[
@@ -81,7 +87,12 @@ package
 			tailSprite.addChild( tf );
 			outfit = gene;
 			
-			
+			var anim:Animator = new Animator( _vorona, 48, 16);
+			anim.x = 8;
+			anim.y = -24;
+			anim.frames = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+			anim.rotation = 90;
+			addChild(anim);
 			
 			tailNum 		= 2 + ((outfit & 0x00003000) >> 12);
 			tailSegments 	= 1 + ((outfit & 0x0000c000) >> 14);
@@ -107,21 +118,21 @@ package
 			zombie = new Sprite;
 			zombie.graphics.beginFill( colors[(outfit & 0x000000f0) >> 4] , 1);
 			zombie.graphics.lineStyle (0, 0x000000, 1);
-			zombie.graphics.moveTo (0, -15);
-			zombie.graphics.lineTo(-10, 0);
-			zombie.graphics.lineTo(0, 15);
-			zombie.graphics.lineTo(10, 0);		
+			zombie.graphics.moveTo (0, -6);
+			zombie.graphics.lineTo(-7, 0);
+			zombie.graphics.lineTo(0, 6);
+			zombie.graphics.lineTo(15, 0);		
 			
 			
 			zombie.graphics.beginFill( colors[outfit & 0x0000000f] , 1);
-			zombie.graphics.drawCircle(0,0, 9);
+			zombie.graphics.drawEllipse(-12,-3,12,6);
 			zombie.graphics.endFill();
 			
-			zombie.graphics.lineStyle(2, eyecolors[(outfit & 0x000f0000) >> 16]);
-			zombie.graphics.moveTo(6, 3);
-			zombie.graphics.lineTo(10, 3);
-			zombie.graphics.moveTo(6, -3);
-			zombie.graphics.lineTo(10, -3);			
+			zombie.graphics.lineStyle(3, eyecolors[(outfit & 0x000f0000) >> 16]);
+			zombie.graphics.moveTo(6, 2);
+			zombie.graphics.lineTo(10, 2);
+			zombie.graphics.moveTo(6, -2);
+			zombie.graphics.lineTo(10, -2);			
 			
 			zombie.graphics.lineStyle(0, black_colors[(outfit & 0x00000f00) >> 8] );
 			zombie.graphics.moveTo(0, 15);

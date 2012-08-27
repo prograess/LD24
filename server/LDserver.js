@@ -1,6 +1,7 @@
 var obvyazka = require('./obvyazka');
 
 var unitModels = [];
+var unitServerModels = [];
 var connectedPlayers = {};
 var blocks = {};
 var DNA = {};
@@ -17,7 +18,7 @@ var props = [
 	type:"float",
 	min: 0.5,
 	max: 0.9,
-	def:0.9
+	def:0.6
 },
 {
 	name:"stepW",
@@ -235,7 +236,7 @@ function hitTest(shot,point){
 }
 
 function runShootTest(data){
-	console.log(JSON.stringify(data));
+	//console.log(JSON.stringify(data));
 	var list = get9BlockList(data.x,data.y);
 	for(var j in list){
 		var i = list[j];
@@ -326,8 +327,14 @@ function createSpawn(dnas)
 	console.log("createSpawn " + x + " " + y);
 }
 
+function removeUnit( id )
+{
+	var u = {id:id, type:unitModels[id].type};
+	sendEveryJ('removeunit', u);
+}
+
 function killSpawn(sid){
-	sendEveryJ('removeunit',unitModels[sid]);
+	removeUnit(sid);
 	console.log("killSpawn "+sid);
 	delete blocks[unitModels[sid].block][sid];
 
@@ -413,6 +420,7 @@ function createZombie(spawnID){
 	var dna = makeDNAFromDNAS(DNA[spawnID]);
 	var gene = makeGeneFromDNA(dna);
 	var obj = {type:"zombie",pos:{x:x,y:y,rot:0},block:block,ai:{dx:0,dy:0,step:0},gene:gene,rating:0};
+	
 	capCoords(obj.pos);
 	obj.id = getfreeID();
 	DNA[obj.id] = dna;
@@ -423,14 +431,21 @@ function createZombie(spawnID){
 			//obj[i]+=coef[j]*gene[j][i];
 		}
 	}
+	
 	zombiesTotal++;
 	unitModels[obj.id] = obj;
-	sendEveryJ('newunit',obj);
+	
+	var u = {type:obj.type, id:obj.id, outfit:obj.gene.outfit};
+	
+	
+	sendEveryJ('newunit',u);
+	
+	zombieAI(obj.id);
 }
 
 function killZombie(zombieID){
-	sendEveryJ('removeunit',unitModels[zombieID]);
-	console.log("killZombie "+zombieID);
+	removeUnit(zombieID);
+	//console.log("killZombie "+zombieID);
 	delete blocks[unitModels[zombieID].block][zombieID];
 
 	unitModels[zombieID] = undefined;
@@ -448,6 +463,14 @@ function removeAITarget(id){
 
 function zombieAI(zombieID){
 	var z = unitModels[zombieID];
+	
+	if (z == undefined) return;
+	
+	setTimeout(
+		function(){ zombieAI(zombieID);}
+	,AITime + Math.random()*AITime)
+
+	
 	var ai = z.ai;
 	var gene = z.gene;
 
@@ -505,13 +528,16 @@ function zombieAI(zombieID){
 
 	ai.dx += gene.accel * nx;
 	ai.dy += gene.accel * ny;
-	ai.dx *= gene.friction;
-	ai.dy *= gene.friction;
+
 
 	var drot = Math.floor(Math.random()*rotstep);
 
 	unitModels[zombieID].pos.x += Math.floor(ai.dx);
 	unitModels[zombieID].pos.y += Math.floor(ai.dy);
+	
+	ai.dx *= gene.friction;
+	ai.dy *= gene.friction;	
+	
 	unitModels[zombieID].pos.rot = ang;
 	unitModels[zombieID].pos.rot %= 360;
 
@@ -535,8 +561,8 @@ function zombieAI(zombieID){
 function checkBite(zid,pid){
 	var biteR = 20;
 	if (distSphere(unitModels[zid].pos,unitModels[pid].pos) <= biteR){
-		console.log('BITE ' + pid);
-		unitModels[zid].rating+=2;
+		//console.log('BITE ' + pid);
+		unitModels[zid].rating+=20;
 		connectedPlayers[pid].sendJ("bite",{id:pid});
 		sendEveryGeoJ("bite",{id:pid},pid);
 		unitModels[pid].health--;
@@ -546,7 +572,7 @@ function checkBite(zid,pid){
 	}
 }
 
-var AITime = 500;
+var AITime = 200;
 
 function getTarget(){
 	var target;
@@ -560,10 +586,10 @@ function getTarget(){
 }
 
 function zombieAIAll(){
-	setTimeout(zombieAIAll,AITime);
-	for (var i in unitModels){
-		if (unitModels[i] && unitModels[i].type == "zombie") zombieAI(i);
-	}
+	//setTimeout(zombieAIAll,AITime);
+	//for (var i in unitModels){
+	//	if (unitModels[i] && unitModels[i].type == "zombie") zombieAI(i);
+	//}
 }
 
 function createPlayer(name){
@@ -583,7 +609,7 @@ initSpawns();
 zombieAIAll();
 
 function handler(c,a){
-	console.log(JSON.stringify(unitModels));
+	//console.log(JSON.stringify(unitModels));
 	var s = "connected: ";
 	for (var i in connectedPlayers){
 		s+= i;
@@ -606,9 +632,17 @@ function handler(c,a){
 		var unitlist = {};
 		for (var i in unitModels){
 			if (unitModels[i]){
-				unitlist[i] = unitModels[i];
+				var u = unitModels[i];
+				unitlist[i] = {type:u.type, pos:u.pos}
+				
+				if (u.gene)
+					unitlist[i].gene = {outfit:u.gene.outfit} ;
+				if (u.name)
+					unitlist[i].name = u.name ;					
 			}
 		}
+		
+		
 		c.sendJ("unitlist",unitlist);
 		c.sendJ("yourself",playerID);
 		sendEveryJ('newunit',unitModels[playerID],playerID);
@@ -690,4 +724,4 @@ function handler(c,a){
 	});
 }
 
-s.listen(8080);
+s.listen(443);

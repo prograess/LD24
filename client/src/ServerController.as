@@ -5,6 +5,7 @@ package
 	import com.prograess.obvyazka.events.RawEvent;
 	import com.prograess.zwooki.SoundQueue;
 	import flash.utils.ByteArray;
+	import flash.utils.getTimer;
 	import flash.utils.setTimeout;
 	import flash.utils.Endian;
 	/**
@@ -32,7 +33,7 @@ package
 		
 		public static function onYourDeath(e:JSONEvent):void {
 			GameSprite.THIS.addChild( GameSprite.death );
-			GameSprite.death.show("You are dead\nYour time: "+ (startPlay/1000).toString() + "s\n\nClick to try again.");
+			GameSprite.death.show("You are dead\nYour time: "+ Math.floor((getTimer() - startPlay)/1000).toString() + "s\n\nClick to try again.");
 		}
 			
 		public static function onShoot(e:JSONEvent):void {
@@ -81,6 +82,9 @@ package
 		
 		public static function onNewunit(e:JSONEvent):void {
 			trace("newunit: " + JSON.encode(e.data));
+			
+			if (!e.data.pos) e.data.pos = { x: -5550, y: -5550, rot:0 };
+			
 			STATIC.unitModels[e.data.id] = e.data;
 			STATIC.units.addUnit(e.data.id);
 		}
@@ -114,7 +118,8 @@ package
 			if ( STATIC.unitModels[ids] == undefined )
 				STATIC.unitModels[ids] = { };
 				
-
+			(STATIC.unitSprites[id] as UnitSprite).update();	
+			
 			STATIC.unitModels[ids].pos = { };
 			STATIC.unitModels[ids].pos.x = x;
 			STATIC.unitModels[ids].pos.y = y;

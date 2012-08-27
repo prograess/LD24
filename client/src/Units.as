@@ -37,7 +37,7 @@ package
 		{			
 			(STATIC.unitSprites[id] as UnitSprite).rx = STATIC.unitModels[id].pos.x;
 			(STATIC.unitSprites[id] as UnitSprite).ry = STATIC.unitModels[id].pos.y;
-			STATIC.unitSprites[id].rotation = STATIC.unitModels[id].pos.rot;
+			STATIC.unitSprites[id].rrot = STATIC.unitModels[id].pos.rot;
 		}
 		
 		public function addUnit(id:String):void
@@ -48,7 +48,7 @@ package
 				newUnit = new Human( STATIC.unitModels[id].name );
 				break;
 			case "zombie":
-				newUnit = new Zombie( STATIC.unitModels[id].gene.outfit, id.toString() );
+				newUnit = new Zombie( STATIC.unitModels[id].outfit, id.toString() );
 				break;
 			case "spawn":
 				newUnit = new Spawn();
@@ -67,7 +67,7 @@ package
 			if ( STATIC.unitModels[id].type == "zombie" )
 			{
 				SoundQueue.play("dead");
-				color = Zombie.bloodcolors[((STATIC.unitModels[id].gene.outfit & 0x00f00000) >> 20)]  ;
+				color = Zombie.bloodcolors[((STATIC.unitModels[id].outfit & 0x00f00000) >> 20)]  ;
 			}
 			
 			GameSprite.THIS.camera.addChild( new BloodRain(STATIC.unitSprites[id].x, STATIC.unitSprites[id].y, color) )
