@@ -107,10 +107,10 @@ var worldTop = -3000;
 var worldBottom = 3000;
 
 function capCoords(c){
-	c.x = Math.min(c.x,worldRight);
-	c.x = Math.max(c.x,worldLeft);
-	c.y = Math.min(c.y,worldBottom);
-	c.y = Math.max(c.y,worldTop);
+	c.x = Math.min(c.x,worldRight + 300);
+	c.x = Math.max(c.x,worldLeft - 300);
+	c.y = Math.min(c.y,worldBottom + 300);
+	c.y = Math.max(c.y,worldTop - 300);
 }
 
 function getRandom(min,max){
@@ -505,7 +505,7 @@ function createZombie(spawnID){
 }
 
 function killZombie(zombieID, killer){
-	connectedPlayers[killer].sendJ("kill",{});
+	if (killer !== undefined) connectedPlayers[killer].sendJ("kill",{});
 	removeUnit(zombieID);
 	//console.log("killZombie "+zombieID);
 	delete blocks[unitModels[zombieID].block][zombieID];
@@ -663,10 +663,10 @@ function zombieAI(zombieID){
 		return;
 	}
 
-	if (unitModels[zombieID].pos.x <= worldLeft ||
-		unitModels[zombieID].pos.x >= worldRight ||
-		unitModels[zombieID].pos.y <= worldTop ||
-		unitModels[zombieID].pos.y >= worldBottom   )
+	if (unitModels[zombieID].pos.x <= worldLeft-200 ||
+		unitModels[zombieID].pos.x >= worldRight+200 ||
+		unitModels[zombieID].pos.y <= worldTop-200 ||
+		unitModels[zombieID].pos.y >= worldBottom+200   )
 	{
 		unitModels[zombieID].h--;
 		if (unitModels[zombieID].h < 0){

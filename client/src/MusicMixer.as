@@ -16,7 +16,7 @@ package
 	
 		public static var musicChannel:SoundChannel = new SoundChannel;
 		
-		[Embed(source="zom_loop.mp3")]
+		[Embed(source="test128.mp3")]
 		//[Embed(source="dry.mp3")]
 		public static var click4Cls:Class;		
 		public static var click4:Sound = new click4Cls() as Sound; 		

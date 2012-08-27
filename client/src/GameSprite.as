@@ -107,6 +107,8 @@ package
 		
 		public function onMouseDown(e:MouseEvent):void
 		{		
+			if (DeathSprite.THIS.visible) return;
+			
 			if (lastShotTime > getTimer() - SHOT_TIME ) 
 			{
 				return;
