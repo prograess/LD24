@@ -646,7 +646,22 @@ function zombieAI(zombieID){
 		killZombie(zombieID);
 		return;
 	}
-	
+
+	if (unitModels[zombieID].pos.x <= worldLeft ||
+		unitModels[zombieID].pos.x >= worldRight ||
+		unitModels[zombieID].pos.y <= worldTop ||
+		unitModels[zombieID].pos.y >= worldBottom   )
+	{
+		unitModels[zombieID].h--;
+		if (unitModels[zombieID].h < 0){
+			killZombie(zombieID);
+			return;
+		}
+		else 
+		{
+			sendEveryGeoJ("hurt",{id:zombieID},zombieID);					
+		}
+	}
 	var buf = new Buffer(8);
 	buf.writeUInt16LE(parseInt(zombieID),0);
 	buf.writeInt16LE(parseInt(unitModels[zombieID].pos.x),2);
@@ -668,7 +683,7 @@ function checkBite(zid,pid){
 		connectedPlayers[pid].sendJ("bite",{id:pid, h:unitModels[pid].health});
 		sendEveryGeoJ("bite",{id:pid},pid);
 		unitModels[pid].health--;
-		if (unitModels[pid].health == 0){	
+		if (unitModels[pid].health <= 0){	
 			connectedPlayers[pid].playerDeath(true);
 		}
 	}
@@ -694,13 +709,15 @@ function zombieAIAll(){
 	//}
 }
 
+var playerHealth = 100;
+
 function createPlayer(name){
 	var id = getfreeID();
 	var x = Math.floor(getRandom(-50,50));
 	var y = Math.floor(getRandom(-50,50));
 	var block = getRealBlock(x,y);
 	initBlock(block,id);
-	return {type:"human",pos:{x:x,y:y,rot:0},block:block,id:id,lastdx:0,lastdy:0,health:100,name:name};
+	return {type:"human",pos:{x:x,y:y,rot:0},block:block,id:id,lastdx:0,lastdy:0,health:playerHealth,name:name};
 }
 
 
@@ -755,8 +772,29 @@ function handler(c,a){
 			unitModels[playerID].lastdx = data.x - unitModels[playerID].pos.x;
 			unitModels[playerID].lastdy = data.y - unitModels[playerID].pos.y;
 			unitModels[playerID].pos = data;
+			
+			if (unitModels[playerID].health > 0){
+				capCoords(unitModels[playerID].pos);
+			}
 
 			updateBlock(playerID);
+
+			if (unitModels[playerID].pos.x <= worldLeft ||
+				unitModels[playerID].pos.x >= worldRight ||
+				unitModels[playerID].pos.y <= worldTop ||
+				unitModels[playerID].pos.y >= worldBottom   )
+			{
+				if (distCube({x:0,y:0},unitModels[playerID].pos) < 6000){
+					console.log("asdasd " + JSON.stringify(unitModels[playerID].pos));
+					connectedPlayers[playerID].sendJ("bite",{id:playerID, h:unitModels[playerID].health});
+					sendEveryGeoJ("bite",{id:playerID},playerID);
+					unitModels[playerID].health-=5;
+					if (unitModels[playerID].health <= 0){	
+						connectedPlayers[playerID].playerDeath(true);
+						return;
+					}
+				}
+			}
 
 			var buf = new Buffer(8);
 			buf.writeUInt16LE(parseInt(playerID),0);
@@ -799,7 +837,7 @@ function handler(c,a){
 		unitModels[playerID].pos.x = x;
 		unitModels[playerID].pos.y = y;
 		unitModels[playerID].block = block;
-		unitModels[playerID].health = 20;
+		unitModels[playerID].health = playerHealth;
 
 		var buf = new Buffer(8);
 		buf.writeUInt16LE(parseInt(playerID),0);
