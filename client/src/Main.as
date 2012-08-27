@@ -27,8 +27,11 @@ package
 		[Embed(source="crow.mp3")]
 		public static var crowCls:Class;		
 		
+		public static var THIS:Main = null;
+		
 		public function Main():void 
 		{
+			THIS = this;
 			if (stage) init();
 			else addEventListener(Event.ADDED_TO_STAGE, init);
 		}
@@ -40,8 +43,8 @@ package
 			removeEventListener(Event.ADDED_TO_STAGE, init);
 			// entry point
 
-			//STATIC.socket = new Client('kkk.myachin.com', 443, "evol");
-			STATIC.socket = new Client('127.0.0.1', 443, "evol");
+			STATIC.socket = new Client('kkk.myachin.com', 443, "evol");
+			//STATIC.socket = new Client('127.0.0.1', 443, "evol");
 			STATIC.socket.addEventListener(Event.CONNECT, function():void {
 				trace("connected");
 				addChild(new AskNameSprite);
@@ -50,7 +53,8 @@ package
 				
 				STATIC.socket.addEventListener("start", function():void {
 					trace("Start game");
-					removeChildAt(0);
+					
+					removeChild(Intro.THIS);
 					addChild(new GameSprite);
 					MusicMixer.playDefaultTrack();
 				});

@@ -35,6 +35,11 @@ package
 
 			public static function onKill(e:JSONEvent):void {
 				GameSprite.kills++;
+				
+				if (GameSprite.kills % 10 == 0)
+				{
+					GameSprite.THIS.addChild( new UpgradeSprite(GameSprite.kills/10) );
+				}
 			}
 		
 		public static function onHurt(e:JSONEvent):void {

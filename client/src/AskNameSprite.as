@@ -17,7 +17,7 @@ package
 	public class AskNameSprite extends Sprite 
 	{
 		public var enterNameTF:TextField;
-		public var nameTF:TextField;
+		public static var nameTF:TextField;
 		public var okBtn:ButtonSprite;
 		
 		[Embed(source = 'logo.png')]
@@ -28,8 +28,11 @@ package
 		public static var _buttonClass:Class;		
 		public static var _button:Bitmap = new _buttonClass as Bitmap;
 		
+		public static var THIS:AskNameSprite = null;
+		
 		public function AskNameSprite() 
 		{
+			THIS = this;
 			enterNameTF = new TextField();
 			enterNameTF.height = 30;
 			enterNameTF.text = "enter your name";
@@ -62,9 +65,7 @@ package
 			
 			okBtn.addEventListener(MouseEvent.CLICK, function():void {
 				if (nameTF.text != ""){
-					STATIC.socket.sendJ("name", nameTF.text);
-					ServerController.startPlay = getTimer();
-					
+					Main.THIS.addChild( new Intro() );
 				}
 			});
 			
