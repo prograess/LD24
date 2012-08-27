@@ -12,12 +12,17 @@ package
 		public var bloodDrops:Array = [];
 		public var bloods:Array = [];
 		
-		public function BloodRain(x:int, y:int, color:uint = 0xff0000) 
+		public var spots:int = 20;
+		
+		public function BloodRain(x:int, y:int, color:uint = 0xff0000, spots:int = 4) 
 		{
 			this.x = x;
 			this.y = y;
+			this.spots = spots
 			
-			for (var i:int = 0; i < 20; i++) 
+			if ( maxBlood > 30 ) return;
+			
+			for (var i:int = 0; i < spots; i++) 
 			{
 				var blood:Shape = new Shape;
 				
@@ -35,15 +40,19 @@ package
 			}
 			
 			addEventListener(Event.ENTER_FRAME, anim);
+			
+			maxBlood++;
 		}
 		
 		public var frames:int = 0;
+		
+		public static var maxBlood:int = 0;
 		
 		public function anim (e:Event = null) : void
 		{
 			frames ++;
 			
-			for (var i:int = 0; i < 20; i++) 
+			for (var i:int = 0; i < spots; i++) 
 			{
 				var b:Shape = bloodDrops[i] as Shape;
 				var bb:Object = bloods[i];
@@ -57,13 +66,14 @@ package
 				bb.dr *= 0.9;
 			}
 			
-			alpha *= 0.95;
+			alpha *= 0.9;
 			
-			if (frames > 120)
+			if (frames > 20)
 			{
 				removeEventListener(Event.ENTER_FRAME, anim);
 				while (numChildren) removeChildAt(0);
 				parent.removeChild( this );
+				maxBlood--;
 			}
 		}
 	}
