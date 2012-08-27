@@ -297,7 +297,7 @@ function runShootTest(data){
 			if (hitTest(data,unitModels[i].pos)) 
 			{
 				unitModels[i].h--;
-				if (unitModels[i].h < 0) killZombie(i);
+				if (unitModels[i].h < 0) killZombie(i, data.id);
 				else 
 				{
 					sendEveryGeoJ("hurt",{id:i},i);					
@@ -504,7 +504,8 @@ function createZombie(spawnID){
 	zombieAI(obj.id);
 }
 
-function killZombie(zombieID){
+function killZombie(zombieID, killer){
+	connectedPlayers[killer].sendJ("kill",{});
 	removeUnit(zombieID);
 	//console.log("killZombie "+zombieID);
 	delete blocks[unitModels[zombieID].block][zombieID];

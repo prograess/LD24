@@ -64,6 +64,7 @@ package
 				if (nameTF.text != ""){
 					STATIC.socket.sendJ("name", nameTF.text);
 					ServerController.startPlay = getTimer();
+					
 				}
 			});
 			
