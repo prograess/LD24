@@ -1,4 +1,20 @@
-var obvyazka = require('./obvyazka');
+var obvyazka = require('./obvyazka'),
+	daemon = require('daemon');
+
+var daemonMode = false;
+process.argv.forEach(function (val, index, array) {
+	var argumentPair = val.split("=");
+	switch ( argumentPair[0] )
+	{
+	case "--daemon":
+	case "-d":
+		daemonMode = true;
+		break;
+	}
+});
+
+
+
 
 var unitModels = [];
 var unitServerModels = [];
@@ -864,3 +880,11 @@ function handler(c,a){
 }
 
 s.listen(443);
+
+if (daemonMode)
+{
+	var pid;
+
+	pid = daemon.start('stdout.log', 'stderr.log');
+	daemon.lock('/tmp/crow_game_server.pid');
+}
