@@ -24,6 +24,9 @@ package
 		[Embed(source="hurt.mp3")]
 		public static var hurtCls:Class;
 		
+		[Embed(source="crow.mp3")]
+		public static var crowCls:Class;		
+		
 		public function Main():void 
 		{
 			if (stage) init();
@@ -59,6 +62,7 @@ package
 			SoundQueue.addToBank(shotCls, "shot");
 			SoundQueue.addToBank(deadCls, "dead");
 			SoundQueue.addToBank(hurtCls, "hurt");
+			SoundQueue.addToBank(crowCls, "crow");
 			
 		}
 		

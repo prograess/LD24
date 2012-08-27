@@ -38,6 +38,8 @@ package
 					
 					parent.removeChild( THIS );
 					ServerController.startPlay = getTimer();
+					GameSprite.liveFader.amount = 1;
+					GameSprite.staminaFader.amount = 1;
 					STATIC.socket.sendJ("RE", {});
 				});
 			

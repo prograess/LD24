@@ -14,7 +14,7 @@ package
 		
 		public var spots:int = 20;
 		
-		public function BloodRain(x:int, y:int, color:uint = 0xff0000, spots:int = 4) 
+		public function BloodRain(x:int, y:int, color:uint = 0xff0000, spots:int = 20) 
 		{
 			this.x = x;
 			this.y = y;

@@ -26,10 +26,29 @@ package
 			STATIC.socket.addEventListener("XY", onXY);	
 			STATIC.socket.addEventListener("shoot", onShoot);	
 			STATIC.socket.addEventListener("bite", onBite);	
+			STATIC.socket.addEventListener("hurt", onHurt);	
 			STATIC.socket.addEventListener("yourdeath", onYourDeath);	
 		}
 		
 		public static var startPlay:uint = 0;
+		
+		public static function onHurt(e:JSONEvent):void {
+			var id:int = e.data.id;
+			
+			var color:uint = 0xff0000;
+			if ( STATIC.unitModels[id].type == "zombie" )
+			{
+			var d:Number = Math.sqrt( 
+				(STATIC.unitModels[id].pos.x - GameSprite.me.x) * (STATIC.unitModels[id].pos.x - GameSprite.me.x) +
+				(STATIC.unitModels[id].pos.y - GameSprite.me.y) * (STATIC.unitModels[id].pos.y - GameSprite.me.y) );				
+				
+				SoundQueue.play("crow", d*0.03);
+				
+				color = Zombie.bloodcolors[((STATIC.unitModels[id].outfit & 0x00f00000) >> 20)]  ;
+			}		
+			
+			GameSprite.THIS.camera.addChild( new BloodRain(STATIC.unitSprites[id].x, STATIC.unitSprites[id].y, color, 1) )
+		}
 		
 		public static function onYourDeath(e:JSONEvent):void {
 			GameSprite.THIS.addChild( GameSprite.death );
@@ -54,6 +73,8 @@ package
 			
 			var id:int = e.data.id;
 			
+			
+			
 			var x:int = STATIC.unitModels[id].pos.x ;
 			var y:int = STATIC.unitModels[id].pos.y ;
 			
@@ -61,7 +82,12 @@ package
 				(x - GameSprite.me.x) * (x - GameSprite.me.x) +
 				(y - GameSprite.me.y) * (y - GameSprite.me.y) );
 			
-			SoundQueue.play("hurt", d);
+			if (e.data.h)
+			{
+				GameSprite.liveFader.amount = e.data.h / 100;
+			}
+				
+			SoundQueue.play("hurt", d*0.03);
 			
 			GameSprite.THIS.camera.addChild( new BloodRain(x, y) )
 		}		

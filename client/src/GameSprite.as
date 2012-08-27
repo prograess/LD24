@@ -30,6 +30,9 @@ package
 		public var moveLeft:Boolean = false;
 		public var step:int = 2;
 		
+		public static var liveFader:Fader = new Fader( 0xff0000 );
+		public static var staminaFader:Fader = new Fader( 0x00ff11 );
+		
 		public static var me:Human;
 		
 		[Embed(source = 'back.png')]
@@ -42,6 +45,9 @@ package
 		
 		public function GameSprite() 
 		{
+			addChild(liveFader);
+			addChild(staminaFader);
+			
 			THIS = this;
 			terrain = new Terrain();
 			camera = new Sprite();		
@@ -58,6 +64,17 @@ package
 			
 			//Start event listeners
 			STATIC.sc = new ServerController();
+			
+			liveFader.x = 20;
+			liveFader.y = 20;
+			liveFader.amount = 1;
+			
+			staminaFader.x = 240;
+			staminaFader.y = 20;			
+			staminaFader.amount = 1;
+			
+			addChild( liveFader );
+			addChild( staminaFader );			
 		}
 		
 		public function onStage (e:Event):void
@@ -117,26 +134,56 @@ package
 				newy = STATIC.getPlayerModel().pos.y;
 			}
 			
+			var staminaBonus:Number = 1.0;
+			var staminaTrata:Number = 0.002;
+
+			if (staminaFader.amount > 0.5)
+			{
+				staminaBonus = 3.0;
+			}			
+			else if (staminaFader.amount > 0.05)
+			{
+				staminaBonus = 2.0;
+			}
+			
+			var isStam: Boolean = false;
+			
 			if (moveDown)
 			{
 				//camera.y -= step;
-				newy += step;
+				newy += staminaBonus * step;
+				staminaFader.amount -= staminaTrata;
+				isStam = true;
 			}
 			if (moveUp)
 			{
 				//camera.y += step;
-				newy -= step;
+				newy -= staminaBonus * step;
+				staminaFader.amount -= staminaTrata;
+				isStam = true;
 			}
 			if (moveLeft)
 			{
 				//camera.x += step;
-				newx -= step;
+				newx -= staminaBonus * step;
+				staminaFader.amount -= staminaTrata;
+				isStam = true;
 			}
 			if (moveRight)
 			{
 				//camera.x -= step;
-				newx += step;
+				newx += staminaBonus * step;
+				staminaFader.amount -= staminaTrata;
+				isStam = true;
 			}
+			
+			if (!isStam) {
+				staminaFader.amount += staminaTrata*3;
+			}
+			
+			staminaFader.amount = Math.max(0,staminaFader.amount);
+			staminaFader.amount = Math.min(1,staminaFader.amount);
+			
 			if (STATIC.playerID != "-1") {
 				STATIC.getPlayerModel().pos.x = newx;
 				STATIC.getPlayerModel().pos.y = newy;

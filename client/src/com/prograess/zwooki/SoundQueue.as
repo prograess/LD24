@@ -29,7 +29,7 @@ package com.prograess.zwooki
 			if (lastPlays[soundName] != undefined)
 			{
 				// Только что играли этот звук?!
-				if (( lastPlays[soundName] + 10 > getTimer() ) && ( lastPlays[soundName] <= getTimer() + 1 ) )
+				if (( lastPlays[soundName] + 50 > getTimer() ) && ( lastPlays[soundName] <= getTimer() + 1 ) )
 				{
 					var delay:int = 10 + Math.random() * 20;
 					// setTimeout(  function():void { play(soundName, distance); }, delay  );

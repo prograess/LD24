@@ -241,7 +241,15 @@ function runShootTest(data){
 	for(var j in list){
 		var i = list[j];
 		if(unitModels[i] && unitModels[i].type == "zombie"){
-			if (hitTest(data,unitModels[i].pos)) killZombie(i);
+			if (hitTest(data,unitModels[i].pos)) 
+			{
+				unitModels[i].h--;
+				if (unitModels[i].h < 0) killZombie(i);
+				else 
+				{
+					sendEveryGeoJ("hurt",{id:i},i);					
+				}
+			}
 		}
 	}
 }
@@ -387,13 +395,13 @@ function generateRandomLinCoef(num){
 }
 
 function maxZombies(){
-	var zombiesPerPlayer = 400;
+	var zombiesPerPlayer = 100;
 
 	var count = 0;
 	for (var i in connectedPlayers){
 		count++;
 	}
-	return count*zombiesPerPlayer+10;
+	return Math.min(1000,count*zombiesPerPlayer+10);
 }
 
 var zombiesTotal = 0;
@@ -419,7 +427,7 @@ function createZombie(spawnID){
 	var block = getRealBlock(x,y);
 	var dna = makeDNAFromDNAS(DNA[spawnID]);
 	var gene = makeGeneFromDNA(dna);
-	var obj = {type:"zombie",pos:{x:x,y:y,rot:0},block:block,ai:{dx:0,dy:0,step:0},gene:gene,rating:0};
+	var obj = {type:"zombie",pos:{x:x,y:y,rot:0},block:block,ai:{dx:0,dy:0,step:0},gene:gene,rating:0,h:2};
 	
 	capCoords(obj.pos);
 	obj.id = getfreeID();
@@ -563,7 +571,7 @@ function checkBite(zid,pid){
 	if (distSphere(unitModels[zid].pos,unitModels[pid].pos) <= biteR){
 		//console.log('BITE ' + pid);
 		unitModels[zid].rating+=200;
-		connectedPlayers[pid].sendJ("bite",{id:pid});
+		connectedPlayers[pid].sendJ("bite",{id:pid, h:unitModels[pid].health});
 		sendEveryGeoJ("bite",{id:pid},pid);
 		unitModels[pid].health--;
 		if (unitModels[pid].health == 0){	
@@ -598,7 +606,7 @@ function createPlayer(name){
 	var y = Math.floor(getRandom(-50,50));
 	var block = getRealBlock(x,y);
 	initBlock(block,id);
-	return {type:"human",pos:{x:x,y:y,rot:0},block:block,id:id,lastdx:0,lastdy:0,health:20,name:name};
+	return {type:"human",pos:{x:x,y:y,rot:0},block:block,id:id,lastdx:0,lastdy:0,health:100,name:name};
 }
 
 
