@@ -69,6 +69,9 @@ function Server(connectionHandler,helo_phrase)
 
 		c.on('data',firstRequestListener);
 		c.on('close',function(){log("CLOSE");});
+		c.on('error',function(exc){
+			console.log("ignoring exception: " + exc);
+		});
 
 		function firstRequestListener(dataReceived){
 			//FIXME what if client send MANY data in HELO
