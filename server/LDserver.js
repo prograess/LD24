@@ -640,6 +640,12 @@ function zombieAI(zombieID){
 
 	updateBlock(zombieID);
 
+	if ( (unitModels[zombieID].pos.x == NaN) || (unitModels[zombieID].pos.y == NaN) || (unitModels[zombieID].pos.rot == NaN) )
+	{
+		killZombie(zombieID);
+		return;
+	}
+
 	if (unitModels[zombieID].pos.x <= worldLeft ||
 		unitModels[zombieID].pos.x >= worldRight ||
 		unitModels[zombieID].pos.y <= worldTop ||
@@ -655,7 +661,6 @@ function zombieAI(zombieID){
 			sendEveryGeoJ("hurt",{id:zombieID},zombieID);					
 		}
 	}
-
 	var buf = new Buffer(8);
 	buf.writeUInt16LE(parseInt(zombieID),0);
 	buf.writeInt16LE(parseInt(unitModels[zombieID].pos.x),2);

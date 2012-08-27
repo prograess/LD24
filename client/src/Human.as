@@ -21,6 +21,18 @@ package
 		public static var _iClass:Class;		
 		public static var _i:Bitmap = new _iClass as Bitmap;
 		
+		[Embed(source = 'i2.png')]
+		public static var _i2Class:Class;		
+		public static var _i2:Bitmap = new _i2Class as Bitmap;
+		
+		[Embed(source = 'i3.png')]
+		public static var _i3Class:Class;		
+		public static var _i3:Bitmap = new _i3Class as Bitmap;
+		
+		[Embed(source = 'head.png')]
+		public static var _headClass:Class;		
+		public static var _head:Bitmap = new _headClass as Bitmap;
+		
 		public var tf:TextField;
 		
 		public function Human( str:String = ""):void
@@ -43,14 +55,27 @@ package
 		public function onFrame2 (e:Event = null) : void
 		{
 			tf.rotation = - rotation;
+			
+			b1.y = 0.8*b1.y + 0.2*-11;
+			b3.x = 0.8*b3.x + 0.2*-32;
 		}
+		
+		public var b1:Bitmap = new _headClass as Bitmap;
+		public var b2:Bitmap = new _i2Class as Bitmap;
+		public var b3:Bitmap = new _i3Class as Bitmap;
+		
 		public function drawHuman ():void
 		{			
-			var bmp:Bitmap = new _iClass as Bitmap;
+			b1.x = -11;
+			b1.y = -11;
+			b2.x -= 32;
+			b2.y -= 32;
+			b3.x -= 32;
+			b3.y -= 32;
 			
-			bmp.x -= 32;
-			bmp.y -= 32;
-			addChild(bmp);
+			addChild(b3);
+			addChild(b2);
+			addChild(b1);
 			
 			human = new Sprite;
 			human.graphics.beginFill(0x50ff50, 1);
@@ -61,6 +86,12 @@ package
 			human.graphics.lineTo(a, 0);		
 			human.graphics.endFill();
 			//this.addChild(human);
+		}
+		
+		public function turbulum ():void
+		{
+			b1.y += Math.random() * 2 - 1;
+			b3.x += Math.random() * 2 - 1;
 		}
 	}
 

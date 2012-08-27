@@ -77,6 +77,7 @@ package
 		
 		public function Zombie( gene:uint = 0, id:String = ""):void
 		{
+			/*
 			var tf:TextField = new TextField;
 			var ttf:TextFormat = new TextFormat("Arial", 7, 0xffffff);
 			
@@ -85,6 +86,7 @@ package
 			tf.y = -20;
 			tf.mouseEnabled = false;
 			tailSprite.addChild( tf );
+			*/
 			outfit = gene;
 			
 			var anim:Animator = new Animator( _vorona, 48, 16);

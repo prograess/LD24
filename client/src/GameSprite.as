@@ -97,7 +97,7 @@ package
 			
 			lastShotTime = getTimer();
 			
-			var ang:int = Math.ceil(Math.atan2( e.stageY - playerY, e.stageX - playerX) / Math.PI * 180 );
+			var ang:int = Math.ceil(Math.atan2( e.stageY - (camera.y + me.y), e.stageX - (camera.x + me.x)) / Math.PI * 180 );
 			var bull:Bullet = new Bullet(me.x, me.y, ang);
 			bull.shoot();
 			
@@ -180,6 +180,7 @@ package
 			if (!isStam) {
 				staminaFader.amount += staminaTrata*3;
 			}
+			else me.turbulum();
 			
 			staminaFader.amount = Math.max(0,staminaFader.amount);
 			staminaFader.amount = Math.min(1,staminaFader.amount);
