@@ -13,7 +13,7 @@ package
 	import flash.utils.Timer;
 	public class Bullet extends Sprite
 	{
-		public static const BulletTime:Number = 0.1;
+		public static const BulletTime:Number = 0.3;
 		public static const BulletSpeed:Number = 10;
 		
 		public static var bulArray:Array = [];
@@ -47,8 +47,8 @@ package
 		public function drawBullet(x:int, y:int):void
 		{	
 			bullet = new Sprite;			
-			bullet.graphics.lineStyle (1, 0xffd700);
-			bullet.graphics.moveTo(x, y);
+			bullet.graphics.lineStyle (3, 0xffd700, 0.5);
+			bullet.graphics.moveTo(x + 30 * Math.cos(bulletAngle), y + 30 * Math.sin(bulletAngle));
 			bullet.graphics.lineTo (x + 500 * Math.cos(bulletAngle), y + 500 * Math.sin(bulletAngle));
 			bullet.filters = [ new DropShadowFilter(0, bulletAngle / Math.PI * 180, 0xffd700, 1, 7, 7, 3)];
 			this.addChild(bullet);			

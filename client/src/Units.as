@@ -38,6 +38,11 @@ package
 			(STATIC.unitSprites[id] as UnitSprite).rx = STATIC.unitModels[id].pos.x;
 			(STATIC.unitSprites[id] as UnitSprite).ry = STATIC.unitModels[id].pos.y;
 			STATIC.unitSprites[id].rrot = STATIC.unitModels[id].pos.rot;
+			
+			if (STATIC.unitModels[id].type == "human") 
+			{
+				if (STATIC.unitSprites[id] != GameSprite.me) STATIC.unitSprites[id].turbulum();
+			}
 		}
 		
 		public function addUnit(id:String):void

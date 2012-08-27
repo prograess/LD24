@@ -36,7 +36,7 @@ package
 		{
 			unUpdated++;
 			
-			if (unUpdated > 180) 
+			if (unUpdated > 100) 
 				visible = false;
 			
 			if ( (rx - x > THRESHOLD) || (rx - x < -THRESHOLD) || (ry - y > THRESHOLD) || (ry - y < -THRESHOLD) )
