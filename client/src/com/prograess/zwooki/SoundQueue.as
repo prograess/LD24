@@ -34,7 +34,7 @@ package com.prograess.zwooki
 					var delay:int = 10 + Math.random() * 20;
 					// setTimeout(  function():void { play(soundName, distance); }, delay  );
 					
-					lastPlays[soundName] += delay;
+					//lastPlays[soundName] += delay;
 					return;
 				}
 			}
