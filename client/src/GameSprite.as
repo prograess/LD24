@@ -8,6 +8,8 @@ package
 	import flash.ui.Keyboard;
 	import flash.utils.Timer;
 	import flash.utils.*;
+	import flash.text.TextField;
+	import flash.text.TextFormat;
 	
 	import com.adobe.serialization.json.JSON;
 	import com.prograess.obvyazka.events.JSONEvent;
@@ -74,8 +76,23 @@ package
 			staminaFader.amount = 1;
 			
 			addChild( liveFader );
-			addChild( staminaFader );			
+			addChild( staminaFader );		
+			
+			
+			
+			var ttf:TextFormat = new TextFormat("Arial", 17, 0xffffff);
+			
+			tf.defaultTextFormat = ttf;
+			tf.text = "Kills: 0\nTime: 0s";
+			tf.x = 650;
+			tf.y = 20;
+			tf.mouseEnabled = false;
+			addChild( tf );			
 		}
+		
+		public static var kills:int = 0;
+		
+		public static var tf:TextField = new TextField;
 		
 		public function onStage (e:Event):void
 		{
@@ -105,6 +122,7 @@ package
 			obj.x = bull.x;
 			obj.y = bull.y;
 			obj.rot = ang;
+			obj.id = STATIC.playerID;
 			STATIC.socket.sendJ("shoot",obj);
 		}
 		
@@ -121,6 +139,8 @@ package
 		
 		public function onEnterFrame(e:Event = null):void 
 		{
+			tf.text = "Kills: "+kills+"\nTime: "+Math.floor((getTimer() - ServerController.startPlay)/1000).toString()+"s";
+			
 			if (STATIC.playerID != '-1') {
 				camera.x = - STATIC.getPlayerModel().pos.x + 400;
 				camera.y = - STATIC.getPlayerModel().pos.y + 300;

@@ -40,7 +40,8 @@ package
 					ServerController.startPlay = getTimer();
 					GameSprite.liveFader.amount = 1;
 					GameSprite.staminaFader.amount = 1;
-					STATIC.socket.sendJ("RE", {});
+					STATIC.socket.sendJ("RE", { } );
+					GameSprite.kills = 0;
 				});
 			
 			addChild(tf);

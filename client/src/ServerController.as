@@ -26,11 +26,16 @@ package
 			STATIC.socket.addEventListener("XY", onXY);	
 			STATIC.socket.addEventListener("shoot", onShoot);	
 			STATIC.socket.addEventListener("bite", onBite);	
+			STATIC.socket.addEventListener("kill", onKill);	
 			STATIC.socket.addEventListener("hurt", onHurt);	
 			STATIC.socket.addEventListener("yourdeath", onYourDeath);	
 		}
 		
 		public static var startPlay:uint = 0;
+
+			public static function onKill(e:JSONEvent):void {
+				GameSprite.kills++;
+			}
 		
 		public static function onHurt(e:JSONEvent):void {
 			var id:int = e.data.id;
