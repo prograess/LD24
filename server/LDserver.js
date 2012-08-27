@@ -49,6 +49,34 @@ var props = [
 	def:0
 },
 {
+	name:"raidus",
+	type:"float",
+	min:10,
+	max:400,
+	def:10
+},
+{
+	name:"revision",
+	type:"float",
+	min:0,
+	max:0.05,
+	def:0
+},
+{
+	name:"attraction",
+	type:"float",
+	min:-1,
+	max:1,
+	def:0
+},
+{
+	name:"flock",
+	type:"float",
+	min:-1,
+	max:1,
+	def:0
+},
+{
 	name:"outfit",
 	type:"halfbyte",
 	min:0,
@@ -76,7 +104,7 @@ function getRandom(min,max){
 var DNAlen = 200;
 
 function generateRandomDNA(){
-	var emptyProb = 0.9;
+	var emptyProb = 0.75;
 	var res = [];
 	var prop,type,val,name,obj;
 	for(var i =0;i<DNAlen;i++){
@@ -89,10 +117,10 @@ function generateRandomDNA(){
 			prop = Math.floor(getRandom(0,props.length));
 			name = props[prop].name;
 			type = props[prop].type;
-			if (type != 'halfbyte'){
+			if (type == 'float'){
 				val = getRandom(props[prop].min,props[prop].max);
 			}
-			else{
+			else if (type == "halfbyte"){
 				var shift = Math.floor(getRandom(0,8))*4;
 				val = {shift:shift,val:Math.floor(getRandom(0,16))};
 			}
@@ -182,6 +210,15 @@ function updateBlock(id){
 		unitModels[id].block = newBlock;
 		initBlock(newBlock,id);
 	}
+}
+
+function getBlockList(x,y){
+	var res = [];
+	var block = getRealBlock(x,y);
+	for(var k in blocks[block]){
+		res.push(blocks[block][k]);
+	}
+	return res;
 }
 
 function get9BlockList(x,y){
@@ -468,7 +505,7 @@ function zombieAI(zombieID){
 	
 	setTimeout(
 		function(){ zombieAI(zombieID);}
-	,AITime + Math.random()*AITime)
+		,AITime + Math.random()*AITime);
 
 	
 	var ai = z.ai;
@@ -478,7 +515,7 @@ function zombieAI(zombieID){
 	var rotstep = 30;
 
 	var min = 100000;
-	if (ai.target === undefined){
+	if (ai.target === undefined || !unitModels[ai.target] || Math.random()<gene.revision){
 		for (var i in connectedPlayers){
 			if (unitModels[i].pos.x<worldLeft - 1000) continue;
 			var d = distSphere(z.pos,unitModels[i].pos);
@@ -489,41 +526,91 @@ function zombieAI(zombieID){
 		}
 	}
 
-	if (!unitModels[ai.target]) return;
+	if (ai.target === undefined) return;
 
 	var targetX = unitModels[ai.target].pos.x;
 	var targetY = unitModels[ai.target].pos.y;
 
-	targetX += gene.speedPrediction*unitModels[ai.target].lastdx;
-	targetY += gene.speedPrediction*unitModels[ai.target].lastdy;
-
-	var nx = targetX - z.pos.x - gene.spirality*(targetY - z.pos.y);
-	var ny = targetY - z.pos.y + gene.spirality*(targetX - z.pos.x);
-	var norm = normSphere({x:nx,y:ny});
-	var ang = Math.floor((Math.atan2(ny,nx)*180/Math.PI));
-	nx /=norm;
-	ny /=norm;
-	
-	nx += gene.repeatMotion * unitModels[ai.target].lastdx;
-	ny += gene.repeatMotion * unitModels[ai.target].lastdy;
-	norm = normSphere({x:nx,y:ny});
-	nx /=norm;
-	ny /=norm;
-	
-
-	if (ai.step){
-		ai.dx += gene.stepW * -ny;
-		ai.dy += gene.stepW * nx;
-		ang -= 10;
-
-		ai.step = 0;
+	var dist = distSphere(unitModels[ai.target].pos,z.pos);
+	var nx,ny,norm;
+	if (dist < gene.radius){
+		nx = targetX;
+		ny = targetY;
+		norm = normSphere({x:nx,y:ny});
+		nx /=norm;
+		ny /=norm;
 	}
 	else{
-		ai.dx += gene.stepW * ny;
-		ai.dy += gene.stepW * -nx;
-		ang += 10;
 
-		ai.step = 1;
+		targetX += gene.speedPrediction*unitModels[ai.target].lastdx;
+		targetY += gene.speedPrediction*unitModels[ai.target].lastdy;
+
+		nx = targetX - z.pos.x - gene.spirality*(targetY - z.pos.y);
+		ny = targetY - z.pos.y + gene.spirality*(targetX - z.pos.x);
+		norm = normSphere({x:nx,y:ny});
+		var ang = Math.floor((Math.atan2(ny,nx)*180/Math.PI));
+		nx /=norm;
+		ny /=norm;
+		
+		nx += gene.repeatMotion * unitModels[ai.target].lastdx;
+		ny += gene.repeatMotion * unitModels[ai.target].lastdy;
+
+		var centX,centY,minD,minD_id,D;
+		centX = centY = 0;
+		minD = 1000000;
+		minD_id = -1;
+		var list = get9BlockList(z.pos.x,z.pos.y);
+		for (var i in list){
+			centX += unitModels[list[i]].pos.x;
+			centY += unitModels[list[i]].pos.y;
+			D = distSphere(z.pos,unitModels[list[i]]);
+			if (D < minD){
+				minD_id = list[i];
+				minD = D;
+			}
+		}
+		centX /= list.length;
+		centY /= list.length;
+		norm = normSphere({x:centX,y:centY});
+		centX /= norm;
+		centY /= norm;
+		nx += gene.flock*centX;
+		ny += gene.flock*centY;
+
+		var mmx,mmy;
+		mmx = mmy = 0;
+
+		if (minD_id != -1){
+			mmx = unitModels[minD_id].pos.x;
+			mmy = unitModels[minD_id].pos.y;
+			var mmn = normSphere({x:mmx,y:mmy});
+			mmx /= mmn;
+			mmy /= mmn;
+		}
+		
+		nx += gene.attraction * mmx;
+		ny += gene.attraction * mmy;
+
+		norm = normSphere({x:nx,y:ny});
+		nx /=norm;
+		ny /=norm;
+		
+
+		if (ai.step){
+			ai.dx += gene.stepW * -ny;
+			ai.dy += gene.stepW * nx;
+			ang -= 10;
+
+			ai.step = 0;
+		}
+		else{
+			ai.dx += gene.stepW * ny;
+			ai.dy += gene.stepW * -nx;
+			ang += 10;
+
+			ai.step = 1;
+		}
+
 	}
 
 	ai.dx += gene.accel * nx;
@@ -633,7 +720,7 @@ function handler(c,a){
 		for (var i in unitModels){
 			if (unitModels[i]){
 				var u = unitModels[i];
-				unitlist[i] = {type:u.type, pos:u.pos}
+				unitlist[i] = {type:u.type, pos:u.pos};
 				
 				if (u.gene)
 					unitlist[i].gene = {outfit:u.gene.outfit} ;
