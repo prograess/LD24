@@ -158,7 +158,7 @@ function getfreeID(){
 	return unitModels.length-1;
 }
 
-var blockSize = 500;
+var blockSize = 400;
 var GeoMaxDist = Math.floor((3*blockSize/2));
 
 function getRealBlock(x,y){
@@ -562,7 +562,7 @@ function checkBite(zid,pid){
 	var biteR = 20;
 	if (distSphere(unitModels[zid].pos,unitModels[pid].pos) <= biteR){
 		//console.log('BITE ' + pid);
-		unitModels[zid].rating+=20;
+		unitModels[zid].rating+=200;
 		connectedPlayers[pid].sendJ("bite",{id:pid});
 		sendEveryGeoJ("bite",{id:pid},pid);
 		unitModels[pid].health--;
