@@ -533,7 +533,7 @@ function zombieAI(zombieID){
 }
 
 function checkBite(zid,pid){
-	var biteR = 25;
+	var biteR = 20;
 	if (distSphere(unitModels[zid].pos,unitModels[pid].pos) <= biteR){
 		console.log('BITE ' + pid);
 		unitModels[zid].rating+=2;
